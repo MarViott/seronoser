@@ -1,6 +1,5 @@
 {% include 'defaults/head.html' %}
 <body>
-    <div id="saludo"></div>
     {% include 'defaults/header.html' %}    
 
     <section class="news-main">
@@ -43,24 +42,6 @@
 
 <!-- Interpolacion barra de busqueda  -->
 <script>{{url_for('static', filename='js/busquedas.js')}}</script>
-
-<script>
-    function mostrarSaludo() {
-      const horaActual = new Date().getHours();
-      const saludoDiv = document.getElementById('saludo');
-  
-      if (horaActual >= 6 && horaActual < 12) {
-        saludoDiv.textContent = '¡Buenos días!';
-      } else if (horaActual >= 12 && horaActual < 18) {
-        saludoDiv.textContent = '¡Buenas tardes!';
-      } else {
-        saludoDiv.textContent = '¡Buenas noches!';
-      }
-    }
-  
-    // Llama a la función al cargar la página
-    mostrarSaludo();
-  </script>
     
 </body>
 </html>

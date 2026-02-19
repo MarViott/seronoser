@@ -1,55 +1,142 @@
-<header>
-  <div class="logo">
-    <a href="/index">
-      <img
-        src="{{ url_for('static', filename='img/logo.ico') }}"
-        alt="Ser o No Ser - Logo"
-      />
-    </a>
+<header class="modern-header">
+  <!-- Top Bar -->
+  <div class="header-top">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <!-- Logo y Marca -->
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="brand-section">
+            <a href="/index" class="brand-link">
+              <img
+                src="{{ url_for('static', filename='img/logo.ico') }}"
+                alt="Logo"
+                class="brand-logo"
+              />
+              <div class="brand-text">
+                <span class="brand-name">Ser o No Ser</span>
+                <span class="brand-tagline">Teatro en Vivo</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Barra de Búsqueda -->
+        <div class="col-lg-6 col-md-4 d-none d-md-block">
+          <div class="search-container">
+            <div class="search-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                placeholder="Buscar obras, actores, críticas..."
+                id="searchInput"
+                class="search-input"
+              />
+              <button type="button" class="search-button">Buscar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Actions -->
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="user-actions">
+            {% if current_user.is_authenticated %}
+            <div class="dropdown">
+              <a href="/mis-compras" class="action-btn" title="Mis Compras">
+                <i class="fas fa-ticket-alt"></i>
+                <span class="d-none d-lg-inline ms-1">Mis Compras</span>
+              </a>
+            </div>
+            <div class="dropdown">
+              <a
+                href="/logout"
+                class="action-btn logout-btn"
+                title="Cerrar Sesión"
+              >
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="d-none d-lg-inline ms-1">Salir</span>
+              </a>
+            </div>
+            {% else %}
+            <a href="/login" class="btn-login">
+              <i class="fas fa-user me-1"></i>Ingresar
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="search-nav">
-    <div class="search">
-      <input
-        type="text"
-        placeholder="Buscar obras, actores..."
-        id="searchInput"
-      />
-      <button type="button" class="search-btn">
+  <!-- Navigation Bar -->
+  <nav class="main-navigation">
+    <div class="container-fluid">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/index" class="nav-link"
+            ><i class="fas fa-theater-masks me-1"></i>Cartelera</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="/estrenos" class="nav-link"
+            ><i class="fas fa-star me-1"></i>Estrenos</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="/criticas" class="nav-link"
+            ><i class="fas fa-comment-dots me-1"></i>Críticas</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="/contacto" class="nav-link"
+            ><i class="fas fa-envelope me-1"></i>Contacto</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="/quienes-somos" class="nav-link"
+            ><i class="fas fa-user-circle me-1"></i>Sobre mí</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="/comunidad" class="nav-link"
+            ><i class="fas fa-users me-1"></i>Comunidad</a
+          >
+        </li>
+      </ul>
+
+      <!-- Mobile Search Toggle -->
+      <button class="mobile-search-toggle d-md-none" id="mobileSearchToggle">
         <i class="fas fa-search"></i>
       </button>
     </div>
+  </nav>
 
-    <nav>
-      <ul>
-        <li><a href="/index">Cartelera</a></li>
-        <li><a href="/estrenos">Estrenos</a></li>
-        <li><a href="/criticas">Críticas</a></li>
-        <li><a href="/contacto">Contacto</a></li>
-        <li><a href="/quienes-somos">Sobre mí</a></li>
-        <li><a href="/comunidad">Comunidad</a></li>
-        {% if current_user.is_authenticated %}
-        <li>
-          <a href="/mis-compras"
-            ><i class="fas fa-ticket-alt me-1"></i>Mis Compras</a
-          >
-        </li>
-        <li>
-          <a href="/logout" style="background: var(--color-primary-light)"
-            ><i class="fas fa-sign-out-alt me-1"></i>Salir ({{
-            current_user.nombre }})</a
-          >
-        </li>
-        {% else %}
-        <li>
-          <a href="/login" style="background: var(--color-primary)"
-            ><i class="fas fa-sign-in-alt me-1"></i>Ingresar</a
-          >
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
+  <!-- Mobile Search -->
+  <div class="mobile-search d-md-none" id="mobileSearch">
+    <div class="container-fluid">
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Buscar..." class="search-input" />
+        <button type="button" class="search-button">Buscar</button>
+      </div>
+    </div>
   </div>
 
-  <h1 class="page-title">{{title}}</h1>
+  <!-- Page Title -->
+  <div class="header-title">
+    <h1 class="page-title">{{title}}</h1>
+  </div>
 </header>
+
+<script>
+  // Toggle mobile search
+  const mobileSearchToggle = document.getElementById("mobileSearchToggle");
+  const mobileSearch = document.getElementById("mobileSearch");
+
+  if (mobileSearchToggle && mobileSearch) {
+    mobileSearchToggle.addEventListener("click", function () {
+      mobileSearch.classList.toggle("active");
+      this.querySelector("i").classList.toggle("fa-search");
+      this.querySelector("i").classList.toggle("fa-times");
+    });
+  }
+</script>
