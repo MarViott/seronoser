@@ -59,6 +59,14 @@ body {
     color: var(--color-text);
     line-height: 1.6;
     min-height: 100vh;
+    overflow-x: hidden; /* Evita scroll horizontal en móvil */
+}
+
+/* ===== RESPONSIVE IMAGES ===== */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 /* ===== UTILIDADES ===== */
@@ -69,6 +77,36 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 var(--spacing-md);
+    max-width: 100%;
+}
+
+/* Mejoras táctiles para móviles */
+@media (hover: none) and (pointer: coarse) {
+    /* Aumentar área táctil en dispositivos móviles */
+    .btn,
+    nav ul li a,
+    .search-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Eliminar efectos hover en dispositivos táctiles */
+    .btn:hover,
+    nav ul li a:hover,
+    .search-btn:hover,
+    .news-main article:hover {
+        transform: none;
+    }
+    
+    /* Agregar efecto activo en su lugar */
+    .btn:active,
+    nav ul li a:active {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
 }
 
 .btn {
@@ -409,42 +447,215 @@ footer {
 }
 
 /* ===== MEDIA QUERIES (RESPONSIVE) ===== */
+
+/* Mobile First - Extra Small Devices (hasta 576px) */
 @media screen and (max-width: 576px) {
+    :root {
+        --font-size-base: 14px;
+    }
+
+    body {
+        padding: 0;
+    }
+
+    /* Header Mobile */
     header {
         flex-direction: column;
         align-items: center;
+        padding: var(--spacing-sm);
+        margin: var(--spacing-xs);
     }
 
+    header .logo img {
+        width: 60px;
+    }
+
+    /* Navegación Mobile */
+    nav ul {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs);
+    }
+
+    nav ul li a {
+        font-size: 0.85rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    /* Títulos Mobile */
     .page-title, h1 {
         font-size: 1.5rem;
+        margin-top: var(--spacing-sm);
     }
 
-    .news-main {
-        flex-direction: column;
-        padding: var(--spacing-sm);
+    h2 {
+        font-size: 1.3rem;
     }
 
-    .news-main article {
+    h3, h5 {
+        font-size: 1.1rem;
+    }
+
+    /* Búsqueda Mobile */
+    .search {
+        flex-direction: row;
         width: 100%;
-    }
-
-    nav ul {
-        flex-direction: column;
-        align-items: center;
+        padding: 0;
     }
 
     .search input[type="text"] {
         max-width: 100%;
+        font-size: 0.9rem;
+        padding: var(--spacing-xs);
     }
 
+    .search-btn {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+
+    /* Main Content Mobile */
+    .news-main {
+        flex-direction: column;
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+
+    .news-main article {
+        width: 100%;
+        padding: var(--spacing-md);
+    }
+
+    .news-main article .img img {
+        height: 200px;
+    }
+
+    .news-main article h2,
+    .news-main article h3 {
+        font-size: 1.2rem;
+    }
+
+    .news-main article p {
+        font-size: 0.95rem;
+    }
+
+    /* Container Mobile */
+    .container {
+        padding: 0 var(--spacing-xs);
+    }
+
+    /* Estrenos Banner Mobile */
+    .estrenos {
+        font-size: 0.9rem;
+        padding: var(--spacing-sm);
+        margin: var(--spacing-xs);
+    }
+
+    /* Footer Mobile */
+    footer {
+        padding: var(--spacing-md);
+        font-size: 0.9rem;
+        margin: var(--spacing-xs);
+    }
+
+    .social a img {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Error Pages Mobile */
     .error-code {
-        font-size: 5rem;
+        font-size: 4rem;
+    }
+
+    .error-message {
+        font-size: 1.3rem;
+    }
+
+    .error-description {
+        font-size: 0.95rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    /* Saludo Mobile */
+    #saludo {
+        font-size: 1rem;
+        padding: var(--spacing-xs);
+    }
+
+    /* Cards Mobile */
+    .card-text {
+        margin: var(--spacing-xs);
+        font-size: 0.9rem;
+    }
+
+    /* Quienes Somos Mobile */
+    .img-banner {
+        width: 150px !important;
+        height: 150px !important;
+    }
+
+    /* Bootstrap overrides for mobile */
+    .my-5 {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .p-5 {
+        padding: 1rem !important;
+    }
+
+    .fs-4, .fs-5 {
+        font-size: 1rem !important;
     }
 }
 
-@media screen and (min-width: 577px) and (max-width: 900px) {
+/* Small Tablets (577px - 768px) */
+@media screen and (min-width: 577px) and (max-width: 768px) {
+    header .logo img {
+        width: 70px;
+    }
+
     .page-title, h1 {
         font-size: 1.8rem;
+    }
+
+    .news-main {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .news-main article {
+        width: calc(50% - var(--spacing-md));
+    }
+
+    .news-main article:first-child {
+        width: 100%;
+    }
+
+    .news-main article .img img {
+        height: 220px;
+    }
+
+    nav ul li a {
+        font-size: 0.95rem;
+    }
+}
+
+/* Tablets (769px - 900px) */
+@media screen and (min-width: 769px) and (max-width: 900px) {
+    .page-title, h1 {
+        font-size: 1.9rem;
     }
 
     .news-main article {
@@ -456,6 +667,7 @@ footer {
     }
 }
 
+/* Small Desktop (901px - 1200px) */
 @media screen and (min-width: 901px) and (max-width: 1200px) {
     .page-title, h1 {
         font-size: 2rem;
@@ -464,8 +676,14 @@ footer {
     .news-main article {
         width: calc(33.333% - var(--spacing-lg));
     }
+
+    header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
 }
 
+/* Large Desktop (1201px+) */
 @media screen and (min-width: 1201px) {
     .page-title, h1 {
         font-size: 2.5rem;
@@ -489,5 +707,30 @@ footer {
 
     .search {
         justify-content: flex-end;
+    }
+
+    .news-main article {
+        width: calc(33.333% - var(--spacing-lg));
+    }
+}
+
+/* Landscape Mobile (hasta 900px de ancho y orientación horizontal) */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    header {
+        padding: var(--spacing-xs);
+    }
+
+    .page-title, h1 {
+        font-size: 1.3rem;
+        margin-top: var(--spacing-xs);
+    }
+
+    nav ul li a {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.85rem;
+    }
+
+    .news-main {
+        gap: var(--spacing-sm);
     }
 }
