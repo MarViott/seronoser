@@ -6,59 +6,37 @@
     <section class="news-main">
         <div class="container">
             
+            {% for obra in obras %}
             <article>
-                <div class="img"> <img src="{{ url_for('static', filename='img/3c25305cf51a4a8c81322786cecf1db9.jpg') }}" alt="Hamlet"></div>
+                <div class="img">
+                    <img src="{{ url_for('static', filename='img/' + obra['imagen']) }}" alt="{{ obra['titulo'] }}">
+                </div>
                 
-                <h2>Hamlet</h2>
-                <p><strong>William Shakespeare.</strong> 
-                    Hamlet es una tragedia de William Shakespeare, escrita entre 1599 y 1601. 
-                    La obra, situada en Dinamarca.La obra se considera una de las más poderosas e influyentes tragedias en la literatura inglesa. Protagonizada por Joaquín Furriel y dirigida por Rubén Szuchmacher.
-                </p>
-                <a href="https://buenosaires.gob.ar/cultura/noticias/hamlet-en-el-teatro-san-martin">Mas informacion</a>
+                <h2>{{ obra['titulo'] }}</h2>
+                <p><strong>{{ obra['autor'] }}{% if obra['director'] %} | Dir: {{ obra['director'] }}{% endif %}</strong></p>
+                <p>{{ obra['descripcion'][:200] }}...</p>
+                
+                <div class="obra-info mb-3">
+                    {% if obra['teatro'] %}
+                    <p class="mb-1"><i class="fas fa-map-marker-alt"></i> <strong>{{ obra['teatro'] }}</strong></p>
+                    {% endif %}
+                    <p class="mb-2" style="font-size: 1.3rem; font-weight: bold; color: var(--color-primary);">
+                        <i class="fas fa-ticket-alt"></i> ${{ "{:,.0f}".format(obra['precio']) }}
+                    </p>
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                    <a href="/comprar/{{ obra['id'] }}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart me-2"></i>Comprar Entradas
+                    </a>
+                {% else %}
+                    <a href="/login?next=/comprar/{{ obra['id'] }}" class="btn btn-secondary">
+                        <i class="fas fa-lock me-2"></i>Inicia sesión para comprar
+                    </a>
+                {% endif %}
             </article>
-            <article>
-                <div class="img"><img src="{{ url_for('static', filename='img/600expte2.jpg') }}" alt="Deseo"></div> <div class="img"></div>
-                <h2>Un tranvia llamado deseo</h2>
-                <p><strong>Tennessee Williams.</strong>
-                    Un tranvía llamado Deseo es una obra de teatro de Tennessee Williams escrita en 1947. Protagonizada por Diego Peretti y Erica Rivas. Dirigida por Daniel Veronese.
-                    La obra se estrenó en Broadway el 3 de diciembre de 1947 y fue galardonada con el Premio Pulitzer de Drama en 1948.
-                </p>
-                <a href="https://www.facebook.com/untranviallamadodeseo/">Mas informacion</a>
-            </article>
-            <article>
-                <div class="img"><img src={{ url_for('static', filename='img/600expte4.jpg') }} alt="Viajante"></div>
-                <h2>La muerte de un viajante</h2>
-                <p><strong>Arthur Miller.</strong>
-                    La muerte de un viajante es una obra de teatro de Arthur Miller escrita en 1949. 
-                    La obra se estrenó en Broadway el 10 de febrero de 1949, en el Morosco Theatre, bajo la dirección de Elia Kazan.
-                </p>
-                <a href="https://teatrocordoba.es/espectaculo/la-muerte-de-un-viajante/">Mas informacion</a>
-            </article>
-            <article>
-                <div class="img"><img src={{ url_for('static', filename='img/acompaña2.jpg') }} alt="Cantante de tango"></div>
-                <h3>El acompañamiento</h3>
-                <p><strong>Carlos Gorostiza.</strong>
-                    El acompañamiento es una obra de teatro de Carlos Gorostiza escrita en 1962. En esta oportunidad la protagonizan dos mujeres que la hacen propia y la llevan a un lugar de intimidad y emoción. Laura y Lidia Bortnik, dos hermanas, se reencuentran en el escenario para interpretar a dos amigas de toda la vida. 
-                    .
-                </p>
-                <a href="https://www.facebook.com/elacompanamiento.obra">Mas informacion</a>
-            </article>
-            <article>
-                <div class="img"><img src={{ url_for('static', filename='img/mihijosolocaminaunpocomaslento.jpg') }} alt="Mihijo"></div>
-                <h2>Mi hijo sólo camina más lento</h2>
-                <p><strong>Thierry Illouz.</strong>
-                    Mi hijo sólo camina más lento es una obra de teatro de Thierry Illouz escrita en 2016. La obra se estrenó en el Teatro del Pueblo en 2017. La obra cuenta la historia de un padre que se enfrenta a la realidad de su hijo con discapacidad.
-                </p>
-                <a href="#">Mas informacion</a>
-            </article>
-            <article>
-                <div class="img"><img src={{ url_for('static', filename='img/boxeo.jpg') }} alt="Boxeo"></div>
-                <h2>El campeón</h2>
-                <p><strong>Fernando Zabala.</strong>
-                    El campeón es una obra de teatro de Fernando Zabala escrita en 2017. La obra se estrenó en el Teatro del Pueblo en 2018. La obra cuenta la historia de un boxeador retirado que se enfrenta a la realidad de su hijo con discapacidad. Dirigida por Mariano Dossena y protagonizada por Christian Thorsen, con el asesoramiento en boxeo de Sergio Maravilla Martínez.
-                </p>
-                <a href="https://www.alternativateatral.com/obra88325-se-despide-el-campeon">Mas informacion</a>
-            </article>
+            {% endfor %}
+            
         </div>
     </section>
     {% include 'defaults/footer.html' %}  

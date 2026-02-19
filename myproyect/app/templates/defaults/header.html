@@ -28,6 +28,25 @@
         <li><a href="/contacto">Contacto</a></li>
         <li><a href="/quienes-somos">Quienes Somos</a></li>
         <li><a href="/comunidad">Comunidad</a></li>
+        {% if current_user.is_authenticated %}
+        <li>
+          <a href="/mis-compras"
+            ><i class="fas fa-ticket-alt me-1"></i>Mis Compras</a
+          >
+        </li>
+        <li>
+          <a href="/logout" style="background: var(--color-primary-light)"
+            ><i class="fas fa-sign-out-alt me-1"></i>Salir ({{
+            current_user.nombre }})</a
+          >
+        </li>
+        {% else %}
+        <li>
+          <a href="/login" style="background: var(--color-primary)"
+            ><i class="fas fa-sign-in-alt me-1"></i>Ingresar</a
+          >
+        </li>
+        {% endif %}
       </ul>
     </nav>
   </div>

@@ -1,0 +1,133 @@
+{% include 'defaults/head.html' %}
+
+<body>
+    {% include 'defaults/header.html' %}
+    
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg" style="border: none; border-radius: var(--radius-lg);">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4" style="color: var(--color-primary);">
+                            <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+                        </h2>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="POST" action="/registro" id="registroForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombre" class="form-label">Nombre *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="nombre" 
+                                           name="nombre" 
+                                           required 
+                                           placeholder="Juan">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="apellido" class="form-label">Apellido *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="apellido" 
+                                           name="apellido" 
+                                           required 
+                                           placeholder="Pérez">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       required 
+                                       placeholder="tu@email.com">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="telefono" 
+                                       name="telefono" 
+                                       placeholder="+54 11 1234-5678">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña *</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       required 
+                                       minlength="6"
+                                       placeholder="Mínimo 6 caracteres">
+                                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password_confirm" class="form-label">Confirmar Contraseña *</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password_confirm" 
+                                       name="password_confirm" 
+                                       required 
+                                       placeholder="Repite tu contraseña">
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="terminos" required>
+                                <label class="form-check-label" for="terminos">
+                                    Acepto los términos y condiciones
+                                </label>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="btn btn-lg w-100 mb-3" 
+                                    style="background-color: var(--color-primary); color: white;">
+                                Crear Cuenta
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">¿Ya tienes cuenta? 
+                                <a href="/login" style="color: var(--color-primary); font-weight: 500;">
+                                    Inicia sesión aquí
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'defaults/footer.html' %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validar que las contraseñas coincidan
+        document.getElementById('registroForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const password_confirm = document.getElementById('password_confirm').value;
+            
+            if (password !== password_confirm) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden');
+            }
+        });
+    </script>
+</body>
+</html>
