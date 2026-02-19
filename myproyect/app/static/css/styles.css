@@ -329,14 +329,200 @@ nav ul li a:hover {
 }
 
 /* ===== FOOTER ===== */
-footer {
-    background-color: var(--color-secondary);
-    color: var(--color-primary-dark);
-    padding: var(--spacing-lg);
-    text-align: center;
-    margin: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
+.modern-footer {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e8e8e8;
+    padding: 0;
+    margin-top: var(--spacing-xl);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.footer-title {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.footer-text {
+    color: #b8b8b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.7rem;
+}
+
+.footer-links a {
+    color: #b8b8b8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.footer-links a i {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.footer-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-link:hover {
+    color: #fff;
+    transform: translateX(3px);
+}
+
+.footer-link-inline {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.footer-link-inline:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Redes Sociales Animadas */
+.social-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.social-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.social-icon:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.social-icon:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.social-icon i {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.social-icon:hover i {
+    transform: rotate(360deg);
+}
+
+/* Colores específicos para cada red social */
+.social-icon.facebook {
+    background: linear-gradient(135deg, #3b5998, #2d4373);
+}
+
+.social-icon.facebook:hover {
+    background: linear-gradient(135deg, #4c70ba, #3b5998);
+}
+
+.social-icon.instagram {
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.social-icon.instagram:hover {
+    background: linear-gradient(135deg, #f5a64b, #f09433, #e6683c, #dc2743);
+}
+
+.social-icon.twitter {
+    background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+}
+
+.social-icon.twitter:hover {
+    background: linear-gradient(135deg, #4ab3f4, #1da1f2);
+}
+
+.social-icon.youtube {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
+.social-icon.youtube:hover {
+    background: linear-gradient(135deg, #ff3333, #ff0000);
+}
+
+/* Animación del corazón */
+.heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    10%, 30% {
+        transform: scale(0.9);
+    }
+    20%, 40%, 60%, 80% {
+        transform: scale(1.1);
+    }
+    50%, 70% {
+        transform: scale(1.05);
+    }
+}
+
+.footer-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0;
+}
+
+.footer-copyright {
+    color: #888;
+    font-size: 0.9rem;
 }
 
 .social {
@@ -732,5 +918,55 @@ footer {
 
     .news-main {
         gap: var(--spacing-sm);
+    }
+}
+
+/* Footer Responsive */
+@media screen and (max-width: 768px) {
+    .modern-footer .row.g-4 {
+        text-align: center;
+    }
+    
+    .footer-title {
+        margin-top: 1.5rem;
+    }
+    
+    .footer-title:first-child {
+        margin-top: 0;
+    }
+    
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .footer-copyright {
+        font-size: 0.85rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .modern-footer .py-5 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
+    .footer-title {
+        font-size: 1rem;
+    }
+    
+    .footer-text {
+        font-size: 0.9rem;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
     }
 }
