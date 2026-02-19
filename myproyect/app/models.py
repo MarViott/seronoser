@@ -47,7 +47,7 @@ class User(UserMixin):
     
     @staticmethod
     def get_by_email(email):
-        """Obtener usuario por email"""
+        """Obtener usuario por email - retorna objeto User"""
         try:
             conexion = conexionMySQL()
             with conexion.cursor() as cursor:
@@ -55,7 +55,20 @@ class User(UserMixin):
                 cursor.execute(query, (email,))
                 result = cursor.fetchone()
             conexion.close()
-            return result
+            
+            if result:
+                # Crear objeto User a partir del resultado
+                user = User(
+                    id=result['id'],
+                    nombre=result['nombre'],
+                    apellido=result['apellido'],
+                    email=result['email'],
+                    activo=result['activo']
+                )
+                # Guardar el hash para verificación de contraseña
+                user.password_hash = result['password_hash']
+                return user
+            return None
         except Exception as e:
             print(f"Error al obtener usuario por email: {e}")
             return None
@@ -82,18 +95,18 @@ class User(UserMixin):
             print(f"Error al crear usuario: {e}")
             return None
     
+    def verify_password(self, password):
+        """Verificar contraseña del usuario (método de instancia)"""
+        if hasattr(self, 'password_hash'):
+            return check_password_hash(self.password_hash, password)
+        return False
+    
     @staticmethod
-    def verify_password(email, password):
-        """Verificar contraseña de usuario"""
-        user_data = User.get_by_email(email)
-        if user_data and check_password_hash(user_data['password_hash'], password):
-            return User(
-                id=user_data['id'],
-                nombre=user_data['nombre'],
-                apellido=user_data['apellido'],
-                email=user_data['email'],
-                activo=user_data['activo']
-            )
+    def authenticate(email, password):
+        """Autenticar usuario por email y contraseña (método estático)"""
+        user = User.get_by_email(email)
+        if user and user.verify_password(password):
+            return user
         return None
 
 

@@ -223,8 +223,8 @@ def registro():
             flash('Este email ya está registrado', 'error')
             return redirect('/registro')
         
-        # Crear usuario
-        user = User.create(nombre, apellido, email, telefono, password)
+        # Crear usuario (orden correcto: nombre, apellido, email, password, telefono)
+        user = User.create(nombre, apellido, email, password, telefono)
         
         if user:
             login_user(user)
