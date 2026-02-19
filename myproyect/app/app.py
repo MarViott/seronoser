@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from datauser import *  # Importamos la base de datos Json
 from controller_db import *  # Importamos la base de datos MySQL
-from models import User, obtener_obras, crear_orden, obtener_ordenes_usuario
+from models import (User, obtener_obras, crear_orden, obtener_ordenes_usuario,
+                    crear_token_recuperacion, validar_token_recuperacion, resetear_password)
 from dotenv import load_dotenv
 from datetime import datetime
 import os
@@ -243,6 +244,83 @@ def logout():
     logout_user()
     flash(f'Hasta pronto, {nombre}!', 'success')
     return redirect('/index')
+
+# ===== RUTAS DE RECUPERACIÓN DE CONTRASEÑA =====
+@app.route('/recuperar-password', methods=['GET', 'POST'])
+def recuperar_password():
+    if current_user.is_authenticated:
+        return redirect('/index')
+    
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        
+        if not email:
+            flash('El email es obligatorio', 'error')
+            return redirect('/recuperar-password')
+        
+        # Crear token (siempre mostramos mensaje de éxito por seguridad)
+        token = crear_token_recuperacion(email)
+        
+        if token:
+            # En producción, aquí enviarías un email
+            # Por ahora, mostramos el link en consola
+            reset_url = f"{request.url_root}resetear-password/{token}"
+            print("\n" + "="*80)
+            print("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA")
+            print("="*80)
+            print(f"\nEmail: {email}")
+            print(f"Link: {reset_url}")
+            print(f"\nEste link expira en 1 hora")
+            print("="*80 + "\n")
+            
+            flash('Si el email está registrado, recibirás un link de recuperación. Revisa la consola del servidor.', 'success')
+        else:
+            # No revelar si el email existe o no por seguridad
+            flash('Si el email está registrado, recibirás un link de recuperación. Revisa la consola del servidor.', 'success')
+        
+        return redirect('/login')
+    
+    title = "Recuperar Contraseña"
+    return render_template('recuperar-password.html', title=title)
+
+@app.route('/resetear-password/<token>', methods=['GET', 'POST'])
+def resetear_password_view(token):
+    if current_user.is_authenticated:
+        return redirect('/index')
+    
+    # Validar token
+    token_data = validar_token_recuperacion(token)
+    
+    if not token_data:
+        flash('El link de recuperación es inválido o ha expirado', 'error')
+        return redirect('/login')
+    
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
+        
+        if not password or not password_confirm:
+            flash('Todos los campos son obligatorios', 'error')
+            return redirect(f'/resetear-password/{token}')
+        
+        if password != password_confirm:
+            flash('Las contraseñas no coinciden', 'error')
+            return redirect(f'/resetear-password/{token}')
+        
+        if len(password) < 6:
+            flash('La contraseña debe tener al menos 6 caracteres', 'error')
+            return redirect(f'/resetear-password/{token}')
+        
+        # Resetear contraseña
+        if resetear_password(token, password):
+            flash('¡Contraseña actualizada exitosamente! Ahora puedes iniciar sesión', 'success')
+            return redirect('/login')
+        else:
+            flash('Error al actualizar la contraseña. Intenta nuevamente', 'error')
+            return redirect(f'/resetear-password/{token}')
+    
+    title = "Nueva Contraseña"
+    return render_template('resetear-password.html', title=title, token=token)
 
 # ===== RUTAS DE E-COMMERCE =====
 @app.route('/comprar/<int:obra_id>')

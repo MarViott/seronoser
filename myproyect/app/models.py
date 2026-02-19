@@ -2,6 +2,8 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import conexionMySQL
 import pymysql
+import secrets
+from datetime import datetime, timedelta
 
 
 class User(UserMixin):
@@ -190,3 +192,113 @@ def obtener_ordenes_usuario(usuario_id):
     except Exception as e:
         print(f"Error al obtener órdenes: {e}")
         return []
+
+
+# ===== FUNCIONES DE RECUPERACIÓN DE CONTRASEÑA =====
+
+def crear_token_recuperacion(email):
+    """
+    Crea un token de recuperación de contraseña para un usuario
+    
+    Args:
+        email: Email del usuario
+    
+    Returns:
+        str: Token generado, o None si hay error
+    """
+    try:
+        # Verificar que el usuario existe
+        user = User.get_by_email(email)
+        if not user:
+            return None
+        
+        # Generar token único
+        token = secrets.token_urlsafe(32)
+        
+        # Expiración: 1 hora desde ahora
+        fecha_expiracion = datetime.now() + timedelta(hours=1)
+        
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = """INSERT INTO password_reset_tokens 
+                      (usuario_id, token, fecha_expiracion) 
+                      VALUES (%s, %s, %s)"""
+            cursor.execute(query, (user.id, token, fecha_expiracion))
+            conexion.commit()
+        conexion.close()
+        
+        return token
+    except Exception as e:
+        print(f"Error al crear token de recuperación: {e}")
+        return None
+
+
+def validar_token_recuperacion(token):
+    """
+    Valida un token de recuperación de contraseña
+    
+    Args:
+        token: Token a validar
+    
+    Returns:
+        dict: Datos del token si es válido, None si no lo es
+    """
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = """SELECT * FROM password_reset_tokens 
+                      WHERE token = %s 
+                      AND usado = FALSE 
+                      AND fecha_expiracion > NOW()"""
+            cursor.execute(query, (token,))
+            result = cursor.fetchone()
+        conexion.close()
+        return result
+    except Exception as e:
+        print(f"Error al validar token: {e}")
+        return None
+
+
+def resetear_password(token, nueva_password):
+    """
+    Resetea la contraseña de un usuario usando un token válido
+    
+    Args:
+        token: Token de recuperación
+        nueva_password: Nueva contraseña
+    
+    Returns:
+        bool: True si se resetó correctamente, False si no
+    """
+    try:
+        # Validar token
+        token_data = validar_token_recuperacion(token)
+        if not token_data:
+            return False
+        
+        usuario_id = token_data['usuario_id']
+        
+        # Actualizar contraseña
+        password_hash = generate_password_hash(nueva_password)
+        
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            # Actualizar password
+            query_update = """UPDATE usuarios_auth 
+                            SET password_hash = %s 
+                            WHERE id = %s"""
+            cursor.execute(query_update, (password_hash, usuario_id))
+            
+            # Marcar token como usado
+            query_token = """UPDATE password_reset_tokens 
+                           SET usado = TRUE 
+                           WHERE token = %s"""
+            cursor.execute(query_token, (token,))
+            
+            conexion.commit()
+        conexion.close()
+        
+        return True
+    except Exception as e:
+        print(f"Error al resetear password: {e}")
+        return False
