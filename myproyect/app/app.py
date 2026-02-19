@@ -62,9 +62,9 @@ def datacriticas():
 
 @app.route('/estrenos')
 def dataestrenos():
+    title = "Estrenos"
     estrenos = obtener_obras(solo_estrenos=True)
-    return render_template('estrenos.html', title=title, obras=estrenos
-    return render_template('estrenos.html', title=title)
+    return render_template('estrenos.html', title=title, obras=estrenos)
 
 @app.route('/quienes-somos')
 def dataquienesSomos():
