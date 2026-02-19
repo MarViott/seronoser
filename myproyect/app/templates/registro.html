@@ -5,9 +5,9 @@
     
     <div class="container my-5">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
+            <div class="col-12 col-sm-10 col-md-10 col-lg-8 col-xl-7">
                 <div class="card shadow-lg" style="border: none; border-radius: var(--radius-lg);">
-                    <div class="card-body p-5">
+                    <div class="card-body p-4 p-md-5">
                         <h2 class="text-center mb-4" style="color: var(--color-primary);">
                             <i class="fas fa-user-plus me-2"></i>Crear Cuenta
                         </h2>
@@ -25,20 +25,21 @@
                         
                         <form method="POST" action="/registro" id="registroForm">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="nombre" class="form-label">Nombre *</label>
+                                <div class="col-md-6 mb-4">
+                                    <label for="nombre" class="form-label fw-semibold">Nombre *</label>
                                     <input type="text" 
-                                           class="form-control" 
+                                           class="form-control form-control-lg" 
                                            id="nombre" 
                                            name="nombre" 
                                            required 
+                                           autofocus
                                            placeholder="Juan">
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
-                                    <label for="apellido" class="form-label">Apellido *</label>
+                                <div class="col-md-6 mb-4">
+                                    <label for="apellido" class="form-label fw-semibold">Apellido *</label>
                                     <input type="text" 
-                                           class="form-control" 
+                                           class="form-control form-control-lg" 
                                            id="apellido" 
                                            name="apellido" 
                                            required 
@@ -46,8 +47,8 @@
                                 </div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email *</label>
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email *</label>
                                 <input type="email" 
                                        class="form-control" 
                                        id="email" 
@@ -97,13 +98,15 @@
                             <button type="submit" 
                                     class="btn btn-lg w-100 mb-3" 
                                     style="background-color: var(--color-primary); color: white;">
-                                Crear Cuenta
+                                <i class="fas fa-user-plus me-2"></i>Crear Cuenta
                             </button>
                         </form>
                         
+                        <hr class="my-4">
+                        
                         <div class="text-center">
                             <p class="mb-0">¿Ya tienes cuenta? 
-                                <a href="/login" style="color: var(--color-primary); font-weight: 500;">
+                                <a href="/login" class="text-decoration-none fw-bold" style="color: var(--color-primary);">
                                     Inicia sesión aquí
                                 </a>
                             </p>
