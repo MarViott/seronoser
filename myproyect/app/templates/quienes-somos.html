@@ -1,51 +1,57 @@
 
 {% include 'defaults/head.html' %}
 
-{% include 'defaults/header.html' %}
-    <div class="container my-5"  >
-        <div class="fs-5 fw-bold fst-italic text-center my-5 p-5 side-appear " >
-            Nuestro equipo, fusiona una amplia gama de habilidades y experiencia en áreas como emprendimiento, tecnología, educación, desarrollo web, administración y finanzas. Con una pasión compartida por la innovación y el crecimiento profesional, nos esforzamos por ofrecer soluciones creativas y efectivas en cada proyecto.
+<body>
+    {% include 'defaults/header.html' %}
+    
+    <div class="container my-5">
+        <div class="fs-4 fw-bold text-center my-5 p-4 side-appear" style="color: var(--color-primary);">
+            <h2 class="mb-4">Sobre Mí</h2>
+            <p class="fs-5 fst-italic" style="color: var(--color-text); line-height: 1.8;">
+                Con una amplia experiencia en comunicación, producción teatral y gestión cultural, 
+                fusiono mi pasión por las artes escénicas con la tecnología para crear espacios 
+                donde el teatro y la comunidad se encuentran.
+            </p>
         </div>
     </div>
-    <div class="container my-5 ">
-        <div class="row rounded-4" >
-            <div  class="col-md-6 ">
-                <div  class="card text-center card-text mb-3 animacion-div">
-                    <div class="card-body text-center bg5">
-                        <img src="./img/banner-4-qs.png" class="rounded-circle mx-auto d-block img-banner" alt="...">
-                        <h5 class="card-title color-">Marisa Viotti</h5>
-                        <p class="card-text">Es una emprendedora con experiencia en comunicación y gestión de redes sociales. Ha trabajado como anfitriona en Airbnb, produciendo espectáculos y conduciendo programas culturales y turísticos, en medios de comunicación. Con habilidades en herramientas informáticas y programación junior, busca sumarse a empresas tecnológicas, vacacionales o de entretenimiento, ofreciendo su dinamismo y capacidad de aprendizaje.</p>
-                        <a href="https://www.linkedin.com/in/marisaviotti/" target="_blank" class="btn btn-primary" style="background-color: brown;">Conocer más...</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-center card-text animacion-div">
-                    <div class="card-body text-center bg5">
-                        <img src="./img/banner-qs.png" class="rounded-circle mx-auto d-block img-banner" alt="...">
-                        <h5 class="card-title">Rocío Evelina Aranda</h5>
-                        <p class="card-text">Es una profesional con formación técnica en Analista de Sistemas y Administración de Empresas. También ha incursionado en capacitación universitaria enfocada en docencia. Posee sólidas habilidades en el manejo de PC y una amplia gama de herramientas digitales. Su experiencia laboral incluye roles como docente co-formadora en instituciones educativas.</p>
-                        <a href="https://github.com/Rocio1412" target="_blank" class="btn btn-primary" style="background-color: brown;">Conocer más...</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-center card-text animacion-div">
-                    <div class="card-body text-center bg5">
-                        <img src="./img/banner-2-qs.png" class="rounded-circle mx-auto d-block img-banner" alt="...">
-                        <h5 class="card-title">Marcela Britos</h5>
-                        <p class="card-text">Es una profesional proactiva con habilidades en liderazgo y gestión administrativa. Su experiencia como desarrolladora Frontend y en captación de clientes la ha convertido en una experta en diseño y desarrollo de sitios web, así como en consultoría y asesoramiento. Como freelance desde septiembre de 2023, ha demostrado su capacidad para liderar equipos y adaptarse a diferentes proyectos con éxito.</p>
-                        <a href="https://www.linkedin.com/in/marcelabritos/" target="_blank" class="btn btn-primary" style="background-color: brown;">Conocer más...</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-center card-text animacion-div">
-                    <div class="card-body text-center bg5">
-                        <img src="./img/banner-3-qs.png" class="rounded-circle mx-auto d-block img-banner" alt="...">
-                        <h5 class="card-title">Mariela S. Flores</h5>
-                        <p class="card-text">Es una profesional en administración de empresas y contadora pública con una destacada experiencia en análisis financiero, gestión presupuestaria y control de costos. Su trayectoria incluye roles clave en empresas, donde se ha desempeñado en la estrategia y planificación IT, así como en el área de planeamiento y control de gestión de áreas de tecnología. Posee habilidades en análisis de datos para la toma de decisiones y cuenta con una sólida formación académica. Además, está certificada en Project Management y Marketing Digital, y ha participado en proyectos de ciberseguridad y data science.</p>
-                        <a href="https://github.com/marielasirur" target="_blank" class="btn btn-primary" style="background-color: brown;">Conocer más...</a>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card text-center card-text mb-3 animacion-div" style="box-shadow: var(--shadow-lg); border: none;">
+                    <div class="card-body text-center p-5" style="background: var(--color-background); border-radius: var(--radius-lg);">
+                        <img src="{{ url_for('static', filename='img/banner-4-qs.png') }}" 
+                             class="rounded-circle mx-auto d-block img-banner mb-4" 
+                             alt="Marisa Viotti"
+                             style="width: 200px; height: 200px; object-fit: cover; border: 5px solid var(--color-primary);">
+                        
+                        <h3 class="card-title mb-3" style="color: var(--color-primary); font-weight: bold;">
+                            Marisa Viotti
+                        </h3>
+                        
+                        <p class="card-text mb-4" style="font-size: 1.1rem; line-height: 1.7;">
+                            Emprendedora con experiencia en comunicación y gestión de redes sociales. 
+                            He trabajado como anfitriona en Airbnb, produciendo espectáculos y conduciendo 
+                            programas culturales y turísticos en medios de comunicación. Con habilidades 
+                            en herramientas informáticas y programación, combino mi pasión por las artes 
+                            escénicas con la innovación tecnológica para crear experiencias únicas en el 
+                            mundo del teatro.
+                        </p>
+                        
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="https://www.marisaviotti.com.ar" 
+                               target="_blank" 
+                               class="btn btn-lg" 
+                               style="background-color: var(--color-primary); color: white; padding: 12px 30px; border-radius: var(--radius-sm); font-weight: 500;">
+                                <i class="fas fa-globe me-2"></i>Sitio Web
+                            </a>
+                            <a href="https://www.linkedin.com/in/marisaviotti/" 
+                               target="_blank" 
+                               class="btn btn-lg" 
+                               style="background-color: var(--color-secondary); color: white; padding: 12px 30px; border-radius: var(--radius-sm); font-weight: 500;">
+                                <i class="fab fa-linkedin me-2"></i>LinkedIn
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -56,8 +62,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" 
 integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-<body>
-    <!-- javascript  -->
-    <script> src={{url_for('static', filename='js/scripts.js/animaciones.js')}}"</script>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/scripts.js/animaciones.js') }}"></script>
 </body>
 </html>
