@@ -1,0 +1,22 @@
+{% include 'defaults/head.html' %}
+<body>
+    {% include 'defaults/header.html' %}
+    
+    <section class="error-container">
+        <div class="error-content">
+            <h1 class="error-code">500</h1>
+            <h2 class="error-message">Error del servidor</h2>
+            <p class="error-description">
+                Lo sentimos, algo salió mal en nuestro servidor.
+                El espectáculo debe continuar, estamos trabajando para solucionarlo.
+            </p>
+            <div class="error-actions">
+                <a href="/index" class="btn btn-primary">Volver a la Cartelera</a>
+                <a href="/contacto" class="btn btn-secondary">Reportar problema</a>
+            </div>
+        </div>
+    </section>
+    
+    {% include 'defaults/footer.html' %}
+</body>
+</html>

@@ -1,21 +1,36 @@
-<div>
 <header>
-    <div class="logo"></div>
-    <img src="{{ url_for('static', filename='img/logo.ico') }}" alt="logo"  class="logo">
-    
+  <div class="logo">
+    <a href="/index">
+      <img
+        src="{{ url_for('static', filename='img/logo.ico') }}"
+        alt="Ser o No Ser - Logo"
+      />
+    </a>
+  </div>
+
+  <div class="search-nav">
     <div class="search">
-        <input type="text" placeholder="Buscar">
+      <input
+        type="text"
+        placeholder="Buscar obras, actores..."
+        id="searchInput"
+      />
+      <button type="button" class="search-btn">
         <i class="fas fa-search"></i>
-        <nav>
-            <ul>
-                <li><a href="index">Cartelera</a></li>
-                <li><a href="estrenos">Estrenos</a></li>
-                <li><a href="criticas">Críticas</a></li>
-                <li><a href="contacto">Contacto</a></li>
-                <li><a href="quienes-somos">Quienes Somos</a></li>
-                <li><a href="persona">Comunidad</a></li>
-            </ul>
-            <h1>{{title}}</h1>    
-        </nav>
+      </button>
+    </div>
+
+    <nav>
+      <ul>
+        <li><a href="/index">Cartelera</a></li>
+        <li><a href="/estrenos">Estrenos</a></li>
+        <li><a href="/criticas">Críticas</a></li>
+        <li><a href="/contacto">Contacto</a></li>
+        <li><a href="/quienes-somos">Quienes Somos</a></li>
+        <li><a href="/comunidad">Comunidad</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <h1 class="page-title">{{title}}</h1>
 </header>
-</div>
