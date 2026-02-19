@@ -7,6 +7,7 @@ load_dotenv()
 
 # Configuración de base de datos desde variables de entorno
 host = os.getenv("DB_HOST", "localhost")
+port = int(os.getenv("DB_PORT", "3306"))
 user = os.getenv("DB_USER", "root")
 clave = os.getenv("DB_PASSWORD", "")
 db = os.getenv("DB_NAME", "seronoser")
@@ -25,6 +26,7 @@ def conexionMySQL():
     try:
         connection = pymysql.connect(
             host=host,
+            port=port,
             user=user,
             password=clave,
             database=db,
