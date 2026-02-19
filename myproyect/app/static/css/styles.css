@@ -770,12 +770,25 @@ h1 {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 3rem 0;
+}
+
+.auth-page .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-page .row {
+    width: 100%;
+    margin: 0;
 }
 
 .auth-page .card {
     background: #ffffff;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0 auto;
 }
 
 .auth-page .card:hover {
