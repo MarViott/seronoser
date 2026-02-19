@@ -1,4 +1,4 @@
-import pymysql
+import pymysql 
 
 host = "localhost"
 user = "root"

@@ -1,6 +1,5 @@
 from db import conexionMySQL
 
-
 # Read - select
 def obtener_usuarios():
     # conexion
@@ -35,7 +34,7 @@ def obtener_usuario_por_id(id):
     conexion = conexionMySQL()
     with conexion.cursor() as cursor:
         query="SELECT * FROM usuarios WHERE id = %s"
-        cursor.execute(query, (id))
+        cursor.execute(query, (id,))
         usuario = cursor.fetchone()
     conexion.commit()
     conexion.close()
@@ -55,7 +54,7 @@ def actualizar_usuario(nombre, email, ocupacion, id):
 def eliminar_usuario(id):
     conexion = conexionMySQL()
     with conexion.cursor() as cursor:
-        cursor.execute("DELETE FROM usuarios WHERE id = %s", (id))
+        cursor.execute("DELETE FROM usuarios WHERE id = %s", (id,))
         result = cursor
     conexion.commit()
     conexion.close()

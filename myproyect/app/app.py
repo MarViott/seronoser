@@ -47,10 +47,10 @@ def dataComunidad():
 @app.route("/comunidad/cargar_usuario")
 def insertComunidad():
     title = "Nuevo Usuario"
-    return render_template("form_nuevo_usuario.html", title=title)
+    return render_template("form_guardar_usuario.html", title=title)
 # 2) enviar los datos del form, por POST
 
-@app.route("/tienda/guardar_nuevo_usuario", methods = ['POST'] )
+@app.route("/comunidad/guardar_nuevo_usuario", methods = ['POST'] )
 def newUser_Comunidad():
     # print(request.form['nombre'])
     nombre_user = request.form['nombre']
