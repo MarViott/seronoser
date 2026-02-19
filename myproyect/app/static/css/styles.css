@@ -171,7 +171,7 @@ img {
     align-items: center;
     text-decoration: none;
     gap: 0.75rem;
-    transition: transform 0.3s ease;
+    transition: all 0.4s ease;
 }
 
 .brand-link:hover {
@@ -179,15 +179,32 @@ img {
 }
 
 .brand-logo {
-    width: 50px;
-    height: 50px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
-    border: 2px solid var(--color-primary);
-    transition: transform 0.3s ease;
+    border: 3px solid var(--color-primary);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .brand-link:hover .brand-logo {
-    transform: rotate(360deg);
+    transform: scale(1.1);
+    box-shadow: 
+        0 0 20px rgba(109, 9, 9, 0.6),
+        0 0 40px rgba(109, 9, 9, 0.4),
+        0 0 60px rgba(109, 9, 9, 0.2),
+        0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: rgba(109, 9, 9, 0.8);
+    animation: logoGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.2);
+    }
 }
 
 .brand-text {
@@ -1109,8 +1126,8 @@ h1 {
     }
     
     .brand-logo {
-        width: 45px;
-        height: 45px;
+        width: 55px;
+        height: 55px;
     }
     
     .brand-name {
@@ -1172,8 +1189,8 @@ h1 {
     }
     
     .brand-logo {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
     }
     
     .search-wrapper {
