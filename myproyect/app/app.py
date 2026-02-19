@@ -69,7 +69,7 @@ def dataestrenos():
 
 @app.route('/quienes-somos')
 def dataquienesSomos():
-    title = "Quienes Somos"
+    title = "Sobre mí"
     return render_template('quienes-somos.html', title=title)
 
 @app.route('/comunidad')
