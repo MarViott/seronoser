@@ -316,6 +316,14 @@ def recuperar_password():
             
             # Intentar enviar email
             try:
+                print(f"[EMAIL DEBUG] Intentando enviar email a: {email}")
+                print(f"[EMAIL DEBUG] MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
+                print(f"[EMAIL DEBUG] MAIL_PORT: {app.config.get('MAIL_PORT')}")
+                print(f"[EMAIL DEBUG] MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
+                print(f"[EMAIL DEBUG] MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
+                print(f"[EMAIL DEBUG] MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
+                print(f"[EMAIL DEBUG] MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
+                
                 msg = Message(
                     subject="Recuperación de Contraseña - Ser o No Ser",
                     recipients=[email],
@@ -366,10 +374,15 @@ def recuperar_password():
                     </html>
                     """
                 )
+                print(f"[EMAIL DEBUG] Mensaje creado, enviando...")
                 mail.send(msg)
+                print(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
                 flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
             except Exception as e:
-                print(f"Error al enviar email: {e}")
+                print(f"[EMAIL ERROR] ❌ Error al enviar email: {type(e).__name__}")
+                print(f"[EMAIL ERROR] Mensaje: {str(e)}")
+                import traceback
+                print(f"[EMAIL ERROR] Traceback:\n{traceback.format_exc()}")
                 # Si falla el email, mostrar el link en consola como respaldo
                 print("\n" + "="*80)
                 print("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA (Error al enviar email)")
