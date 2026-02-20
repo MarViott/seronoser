@@ -1,3 +1,8 @@
+databases:
+  - name: teatro-db
+    databaseName: teatro_ecommerce
+    user: teatro_user
+
 services:
   - type: web
     name: teatro-app
@@ -11,6 +16,28 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: teatro-db
+          property: connectionString
+      - key: DB_HOST
+        fromDatabase:
+          name: teatro-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: teatro-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: teatro-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: teatro-db
+          property: database
+      - key: DB_PORT
+        value: 5432
       - key: MAIL_SERVER
         sync: false
       - key: MAIL_PORT
@@ -25,13 +52,3 @@ services:
         sync: false
       - key: MAIL_DEFAULT_SENDER
         sync: false
-      - key: DB_HOST
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: DB_PORT
-        value: 3306

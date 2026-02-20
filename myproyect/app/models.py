@@ -1,7 +1,8 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import conexionMySQL
-import pymysql
+import psycopg2
+import psycopg2.extras
 import secrets
 from datetime import datetime, timedelta
 
@@ -29,7 +30,7 @@ class User(UserMixin):
         """Obtener usuario por ID"""
         try:
             conexion = conexionMySQL()
-            with conexion.cursor() as cursor:
+            with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
                 query = "SELECT id, nombre, apellido, email, activo, rol FROM usuarios_auth WHERE id = %s AND activo = TRUE"
                 cursor.execute(query, (user_id,))
                 result = cursor.fetchone()
@@ -54,7 +55,7 @@ class User(UserMixin):
         """Obtener usuario por email - retorna objeto User"""
         try:
             conexion = conexionMySQL()
-            with conexion.cursor() as cursor:
+            with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
                 query = "SELECT id, nombre, apellido, email, password_hash, activo, rol FROM usuarios_auth WHERE email = %s"
                 cursor.execute(query, (email,))
                 result = cursor.fetchone()
@@ -87,13 +88,13 @@ class User(UserMixin):
             with conexion.cursor() as cursor:
                 query = """INSERT INTO usuarios_auth 
                           (nombre, apellido, email, password_hash, telefono, rol) 
-                          VALUES (%s, %s, %s, %s, %s, %s)"""
+                          VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"""
                 cursor.execute(query, (nombre, apellido, email, password_hash, telefono, rol))
                 conexion.commit()
-                user_id = cursor.lastrowid
+                user_id = cursor.fetchone()[0]
             conexion.close()
             return user_id
-        except pymysql.IntegrityError:
+        except psycopg2.IntegrityError:
             print(f"El email {email} ya está registrado")
             return None
         except Exception as e:
@@ -136,7 +137,7 @@ def obtener_obras(solo_estrenos=False):
     """Obtiene obras de teatro desde la base de datos"""
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             if solo_estrenos:
                 query = "SELECT * FROM obras WHERE activo = TRUE AND es_estreno = TRUE ORDER BY fecha_creacion DESC"
             else:
@@ -154,7 +155,7 @@ def obtener_obra_por_id(obra_id):
     """Obtiene una obra específica por ID"""
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = "SELECT * FROM obras WHERE id = %s AND activo = TRUE"
             cursor.execute(query, (obra_id,))
             result = cursor.fetchone()
@@ -173,9 +174,9 @@ def crear_orden(usuario_id, obra_id, cantidad, precio_unitario, fecha_funcion):
         
         with conexion.cursor() as cursor:
             # Crear orden
-            query_orden = "INSERT INTO ordenes (usuario_id, total, estado) VALUES (%s, %s, 'pendiente')"
+            query_orden = "INSERT INTO ordenes (usuario_id, total, estado) VALUES (%s, %s, 'pendiente') RETURNING id"
             cursor.execute(query_orden, (usuario_id, subtotal))
-            orden_id = cursor.lastrowid
+            orden_id = cursor.fetchone()[0]
             
             # Crear detalle de orden
             query_detalle = """INSERT INTO orden_detalles 
@@ -195,7 +196,7 @@ def obtener_ordenes_usuario(usuario_id):
     """Obtiene todas las órdenes de un usuario"""
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
                 SELECT o.*, od.obra_id, od.cantidad, od.fecha_funcion, ob.titulo, ob.teatro
                 FROM ordenes o
@@ -264,7 +265,7 @@ def validar_token_recuperacion(token):
     """
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """SELECT * FROM password_reset_tokens 
                       WHERE token = %s 
                       AND usado = FALSE 
@@ -329,7 +330,7 @@ def contar_obras(filtro=None):
     """Cuenta el total de obras activas"""
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             if filtro == 'estrenos':
                 query = "SELECT COUNT(*) as total FROM obras WHERE activo = TRUE AND es_estreno = TRUE"
             elif filtro == 'cartelera':
@@ -350,7 +351,7 @@ def obtener_obras_paginadas(pagina=1, por_pagina=6, filtro=None):
     try:
         offset = (pagina - 1) * por_pagina
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             if filtro == 'estrenos':
                 query = """SELECT * FROM obras WHERE activo = TRUE AND es_estreno = TRUE 
                           ORDER BY fecha_creacion DESC LIMIT %s OFFSET %s"""
@@ -376,11 +377,11 @@ def crear_obra(titulo, autor, director, descripcion, imagen, precio, fecha_estre
         with conexion.cursor() as cursor:
             query = """INSERT INTO obras 
                       (titulo, autor, director, descripcion, imagen, precio, fecha_estreno, teatro, duracion, es_estreno)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"""
             cursor.execute(query, (titulo, autor, director, descripcion, imagen, precio, 
                                   fecha_estreno, teatro, duracion, es_estreno))
             conexion.commit()
-            obra_id = cursor.lastrowid
+            obra_id = cursor.fetchone()[0]
         conexion.close()
         return obra_id
     except Exception as e:

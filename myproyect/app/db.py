@@ -1,4 +1,5 @@
-import pymysql
+import psycopg2
+import psycopg2.extras
 import os
 from dotenv import load_dotenv
 
@@ -7,33 +8,31 @@ load_dotenv()
 
 # Configuración de base de datos desde variables de entorno
 host = os.getenv("DB_HOST", "localhost")
-port = int(os.getenv("DB_PORT", "3306"))
-user = os.getenv("DB_USER", "root")
+port = int(os.getenv("DB_PORT", "5432"))
+user = os.getenv("DB_USER", "postgres")
 clave = os.getenv("DB_PASSWORD", "")
-db = os.getenv("DB_NAME", "seronoser")
+db = os.getenv("DB_NAME", "ecommerce")
 
 
 def conexionMySQL():
     """
-    Establece y retorna una conexión a la base de datos MySQL.
+    Establece y retorna una conexión a la base de datos PostgreSQL.
     
     Returns:
-        pymysql.Connection: Objeto de conexión a la base de datos
+        psycopg2.Connection: Objeto de conexión a la base de datos
         
     Raises:
-        pymysql.Error: Si hay un error al conectar con la base de datos
+        psycopg2.Error: Si hay un error al conectar con la base de datos
     """
     try:
-        connection = pymysql.connect(
+        connection = psycopg2.connect(
             host=host,
             port=port,
             user=user,
             password=clave,
-            database=db,
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
+            database=db
         )
         return connection
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al conectar con la base de datos: {e}")
         raise

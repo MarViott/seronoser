@@ -1,5 +1,6 @@
 from db import conexionMySQL
-import pymysql
+import psycopg2
+import psycopg2.extras
 
 # Read - select
 def obtener_usuarios():
@@ -11,13 +12,13 @@ def obtener_usuarios():
     """
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = "SELECT * FROM usuarios ORDER BY id"
             cursor.execute(query)
             result = cursor.fetchall()
         conexion.close()
         return result
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al obtener usuarios: {e}")
         return []
     except Exception as e:
@@ -45,7 +46,7 @@ def cargar_nuevo_usuario(nombre, email, ocupacion):
             conexion.commit()
         conexion.close()
         return True
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al cargar nuevo usuario: {e}")
         return False
     except Exception as e:
@@ -65,13 +66,13 @@ def obtener_usuario_por_id(id):
     """
     try:
         conexion = conexionMySQL()
-        with conexion.cursor() as cursor:
+        with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = "SELECT * FROM usuarios WHERE id = %s"
             cursor.execute(query, (id,))
             usuario = cursor.fetchone()
         conexion.close()
         return usuario
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al obtener usuario por id {id}: {e}")
         return None
     except Exception as e:
@@ -100,7 +101,7 @@ def actualizar_usuario(nombre, email, ocupacion, id):
             conexion.commit()
         conexion.close()
         return True
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al actualizar usuario {id}: {e}")
         return False
     except Exception as e:
@@ -127,7 +128,7 @@ def eliminar_usuario(id):
             conexion.commit()
         conexion.close()
         return True
-    except pymysql.Error as e:
+    except psycopg2.Error as e:
         print(f"Error al eliminar usuario {id}: {e}")
         return False
     except Exception as e:
