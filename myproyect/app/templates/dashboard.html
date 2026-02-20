@@ -1,0 +1,305 @@
+{% include 'defaults/head.html' %} {% include 'defaults/header.html' %}
+
+<section class="dashboard-section py-5">
+  <div class="container">
+    <!-- Header del Dashboard -->
+    <div class="dashboard-header mb-5">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h1 class="dashboard-title">
+            <i class="fas fa-theater-masks me-2"></i> Gestión de Obras
+          </h1>
+          <p class="text-muted">
+            Administra las obras de teatro en cartelera y estrenos
+          </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="/dashboard/nueva-obra" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Obra
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="dashboard-filters mb-4">
+      <div class="btn-group" role="group" aria-label="Filtros">
+        <a
+          href="/dashboard"
+          class="btn {% if not filtro %}btn-primary{% else %}btn-outline-primary{% endif %}"
+        >
+          <i class="fas fa-th me-2"></i> Todas
+        </a>
+        <a
+          href="/dashboard?filtro=estrenos"
+          class="btn {% if filtro == 'estrenos' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+        >
+          <i class="fas fa-star me-2"></i> Estrenos
+        </a>
+        <a
+          href="/dashboard?filtro=cartelera"
+          class="btn {% if filtro == 'cartelera' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+        >
+          <i class="fas fa-film me-2"></i> Cartelera
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabla de Obras -->
+    {% if obras %}
+    <div class="table-responsive dashboard-table">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 80px">Imagen</th>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Director</th>
+            <th>Teatro</th>
+            <th style="width: 100px">Precio</th>
+            <th style="width: 120px">Estado</th>
+            <th style="width: 200px" class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obra in obras %}
+          <tr>
+            <td>
+              {% if obra.imagen %}
+              <img
+                src="{{ url_for('static', filename='img/obras/' + obra.imagen) }}"
+                alt="{{ obra.titulo }}"
+                class="obra-thumbnail"
+              />
+              {% else %}
+              <div class="obra-thumbnail-placeholder">
+                <i class="fas fa-image"></i>
+              </div>
+              {% endif %}
+            </td>
+            <td><strong>{{ obra.titulo }}</strong></td>
+            <td>{{ obra.autor if obra.autor else '-' }}</td>
+            <td>{{ obra.director if obra.director else '-' }}</td>
+            <td>{{ obra.teatro if obra.teatro else '-' }}</td>
+            <td><strong>${{ "%.2f"|format(obra.precio) }}</strong></td>
+            <td>
+              {% if obra.es_estreno %}
+              <span class="badge bg-warning text-dark">
+                <i class="fas fa-star me-1"></i> Estreno
+              </span>
+              {% else %}
+              <span class="badge bg-info">
+                <i class="fas fa-film me-1"></i> Cartelera
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm" role="group">
+                <a
+                  href="/dashboard/editar/{{ obra.id }}"
+                  class="btn btn-outline-primary"
+                  title="Editar"
+                >
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a
+                  href="/dashboard/alternar-estreno/{{ obra.id }}"
+                  class="btn btn-outline-warning"
+                  title="{% if obra.es_estreno %}Mover a Cartelera{% else %}Marcar como Estreno{% endif %}"
+                >
+                  <i
+                    class="fas fa-{% if obra.es_estreno %}film{% else %}star{% endif %}"
+                  ></i>
+                </a>
+                <a
+                  href="/dashboard/eliminar/{{ obra.id }}"
+                  class="btn btn-outline-danger"
+                  title="Eliminar"
+                  onclick="return confirm('¿Estás seguro de eliminar &quot;{{ obra.titulo }}&quot;?')"
+                >
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if total_paginas > 1 %}
+    <nav aria-label="Paginación de obras" class="mt-4">
+      <ul class="pagination justify-content-center">
+        <!-- Botón Anterior -->
+        <li class="page-item {% if pagina_actual == 1 %}disabled{% endif %}">
+          <a
+            class="page-link"
+            href="/dashboard?pagina={{ pagina_actual - 1 }}{% if filtro %}&filtro={{ filtro }}{% endif %}"
+          >
+            <i class="fas fa-chevron-left"></i> Anterior
+          </a>
+        </li>
+
+        <!-- Números de página -->
+        {% for num_pagina in range(1, total_paginas + 1) %} {% if num_pagina ==
+        pagina_actual %}
+        <li class="page-item active">
+          <span class="page-link">{{ num_pagina }}</span>
+        </li>
+        {% elif num_pagina == 1 or num_pagina == total_paginas or (num_pagina >=
+        pagina_actual - 2 and num_pagina <= pagina_actual + 2) %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="/dashboard?pagina={{ num_pagina }}{% if filtro %}&filtro={{ filtro }}{% endif %}"
+          >
+            {{ num_pagina }}
+          </a>
+        </li>
+        {% elif num_pagina == pagina_actual - 3 or num_pagina == pagina_actual +
+        3 %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %} {% endfor %}
+
+        <!-- Botón Siguiente -->
+        <li
+          class="page-item {% if pagina_actual == total_paginas %}disabled{% endif %}"
+        >
+          <a
+            class="page-link"
+            href="/dashboard?pagina={{ pagina_actual + 1 }}{% if filtro %}&filtro={{ filtro }}{% endif %}"
+          >
+            Siguiente <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %} {% else %}
+    <!-- Estado Vacío -->
+    <div class="empty-state text-center py-5">
+      <i class="fas fa-theater-masks fa-5x text-muted mb-4"></i>
+      <h3 class="text-muted">No hay obras todavía</h3>
+      <p class="text-muted mb-4">
+        Comienza agregando tu primera obra al catálogo
+      </p>
+      <a href="/dashboard/nueva-obra" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus-circle me-2"></i> Crear Primera Obra
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  .dashboard-section {
+    min-height: calc(100vh - 200px);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .dashboard-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-filters {
+    display: flex;
+    justify-content: center;
+  }
+
+  .dashboard-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .obra-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .obra-thumbnail-placeholder {
+    width: 60px;
+    height: 60px;
+    background: #e9ecef;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 1.5rem;
+  }
+
+  .table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+  }
+
+  .table tbody tr {
+    transition: all 0.3s ease;
+  }
+
+  .table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+  }
+
+  .btn-group-sm .btn {
+    transition: all 0.3s ease;
+  }
+
+  .btn-group-sm .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .pagination .page-link {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  .pagination .page-link:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white;
+  }
+
+  .empty-state i {
+    opacity: 0.3;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-header {
+      text-align: center;
+    }
+
+    .dashboard-header .col-md-6 {
+      margin-bottom: 1rem;
+    }
+
+    .table {
+      font-size: 0.875rem;
+    }
+
+    .obra-thumbnail,
+    .obra-thumbnail-placeholder {
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+{% include 'defaults/footer.html' %}

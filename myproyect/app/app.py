@@ -1,18 +1,30 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.utils import secure_filename
 from datauser import *  # Importamos la base de datos Json
 from controller_db import *  # Importamos la base de datos MySQL
-from models import (User, obtener_obras, crear_orden, obtener_ordenes_usuario,
-                    crear_token_recuperacion, validar_token_recuperacion, resetear_password)
+from models import (User, obtener_obras, obtener_obra_por_id, crear_orden, obtener_ordenes_usuario,
+                    crear_token_recuperacion, validar_token_recuperacion, resetear_password,
+                    contar_obras, obtener_obras_paginadas, crear_obra, actualizar_obra, 
+                    eliminar_obra, alternar_estreno)
 from dotenv import load_dotenv
 from datetime import datetime
 import os
+import math
 
 # Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default-secret-key-change-me')
+
+# Configuración de subida de archivos
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'static', 'img', 'obras')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Crear carpeta de uploads si no existe
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Configuración de Flask-Login
 login_manager = LoginManager()
@@ -386,6 +398,175 @@ def mis_compras():
     title = "Mis Compras"
     ordenes = obtener_ordenes_usuario(current_user.id)
     return render_template('mis-compras.html', title=title, ordenes=ordenes)
+
+
+# ========== DASHBOARD ADMINISTRATIVO ==========
+
+def archivo_permitido(filename):
+    """Verifica si el archivo tiene una extensión permitida"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """Dashboard principal para gestión de obras"""
+    title = "Dashboard - Gestión de Obras"
+    
+    # Obtener parámetros de paginación y filtro
+    pagina = request.args.get('pagina', 1, type=int)
+    filtro = request.args.get('filtro', None)  # None, 'estrenos', 'cartelera'
+    por_pagina = 6
+    
+    # Obtener obras paginadas
+    obras = obtener_obras_paginadas(pagina, por_pagina, filtro)
+    total_obras = contar_obras(filtro)
+    total_paginas = math.ceil(total_obras / por_pagina)
+    
+    return render_template('dashboard.html', 
+                         title=title, 
+                         obras=obras,
+                         pagina_actual=pagina,
+                         total_paginas=total_paginas,
+                         filtro=filtro)
+
+
+@app.route('/dashboard/nueva-obra', methods=['GET', 'POST'])
+@login_required
+def nueva_obra():
+    """Crear nueva obra"""
+    title = "Nueva Obra"
+    
+    if request.method == 'POST':
+        try:
+            # Procesar imagen
+            imagen_nombre = None
+            if 'imagen' in request.files:
+                archivo = request.files['imagen']
+                if archivo and archivo.filename and archivo_permitido(archivo.filename):
+                    filename = secure_filename(archivo.filename)
+                    # Agregar timestamp para evitar duplicados
+                    nombre, ext = os.path.splitext(filename)
+                    filename = f"{nombre}_{int(datetime.now().timestamp())}{ext}"
+                    archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    imagen_nombre = filename
+            
+            # Crear obra
+            obra_id = crear_obra(
+                titulo=request.form.get('titulo'),
+                autor=request.form.get('autor'),
+                director=request.form.get('director'),
+                descripcion=request.form.get('descripcion'),
+                imagen=imagen_nombre,
+                precio=float(request.form.get('precio', 0)),
+                fecha_estreno=request.form.get('fecha_estreno') or None,
+                teatro=request.form.get('teatro'),
+                duracion=int(request.form.get('duracion', 0)) if request.form.get('duracion') else None,
+                es_estreno=bool(request.form.get('es_estreno'))
+            )
+            
+            flash(f'Obra "{request.form.get("titulo")}" creada exitosamente', 'success')
+            return redirect('/dashboard')
+            
+        except Exception as e:
+            print(f"Error al crear obra: {e}")
+            flash('Error al crear la obra', 'error')
+    
+    return render_template('form-obra.html', title=title, obra=None)
+
+
+@app.route('/dashboard/editar/<int:obra_id>', methods=['GET', 'POST'])
+@login_required
+def editar_obra(obra_id):
+    """Editar obra existente"""
+    obra = obtener_obra_por_id(obra_id)
+    
+    if not obra:
+        flash('Obra no encontrada', 'error')
+        return redirect('/dashboard')
+    
+    title = f"Editar: {obra['titulo']}"
+    
+    if request.method == 'POST':
+        try:
+            # Procesar nueva imagen si se subió
+            imagen_nombre = obra['imagen']  # Mantener imagen actual por defecto
+            if 'imagen' in request.files:
+                archivo = request.files['imagen']
+                if archivo and archivo.filename and archivo_permitido(archivo.filename):
+                    # Eliminar imagen anterior si existe
+                    if obra['imagen']:
+                        ruta_anterior = os.path.join(app.config['UPLOAD_FOLDER'], obra['imagen'])
+                        if os.path.exists(ruta_anterior):
+                            os.remove(ruta_anterior)
+                    
+                    # Guardar nueva imagen
+                    filename = secure_filename(archivo.filename)
+                    nombre, ext = os.path.splitext(filename)
+                    filename = f"{nombre}_{int(datetime.now().timestamp())}{ext}"
+                    archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    imagen_nombre = filename
+            
+            # Actualizar obra
+            actualizar_obra(
+                obra_id=obra_id,
+                titulo=request.form.get('titulo'),
+                autor=request.form.get('autor'),
+                director=request.form.get('director'),
+                descripcion=request.form.get('descripcion'),
+                imagen=imagen_nombre,
+                precio=float(request.form.get('precio', 0)),
+                fecha_estreno=request.form.get('fecha_estreno') or None,
+                teatro=request.form.get('teatro'),
+                duracion=int(request.form.get('duracion', 0)) if request.form.get('duracion') else None,
+                es_estreno=bool(request.form.get('es_estreno'))
+            )
+            
+            flash(f'Obra "{request.form.get("titulo")}" actualizada exitosamente', 'success')
+            return redirect('/dashboard')
+            
+        except Exception as e:
+            print(f"Error al actualizar obra: {e}")
+            flash('Error al actualizar la obra', 'error')
+    
+    return render_template('form-obra.html', title=title, obra=obra)
+
+
+@app.route('/dashboard/eliminar/<int:obra_id>')
+@login_required
+def eliminar_obra_route(obra_id):
+    """Eliminar obra (soft delete)"""
+    try:
+        obra = obtener_obra_por_id(obra_id)
+        if obra:
+            eliminar_obra(obra_id)
+            flash(f'Obra "{obra["titulo"]}" eliminada exitosamente', 'success')
+        else:
+            flash('Obra no encontrada', 'error')
+    except Exception as e:
+        print(f"Error al eliminar obra: {e}")
+        flash('Error al eliminar la obra', 'error')
+    
+    return redirect('/dashboard')
+
+
+@app.route('/dashboard/alternar-estreno/<int:obra_id>')
+@login_required
+def alternar_estreno_route(obra_id):
+    """Alternar estado de estreno de una obra"""
+    try:
+        obra = obtener_obra_por_id(obra_id)
+        if obra:
+            alternar_estreno(obra_id)
+            nuevo_estado = "estreno" if not obra['es_estreno'] else "cartelera"
+            flash(f'Obra "{obra["titulo"]}" movida a {nuevo_estado}', 'success')
+        else:
+            flash('Obra no encontrada', 'error')
+    except Exception as e:
+        print(f"Error al alternar estreno: {e}")
+        flash('Error al cambiar estado de la obra', 'error')
+    
+    return redirect('/dashboard')
 
 
 if __name__ == '__main__':

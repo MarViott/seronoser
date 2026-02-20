@@ -302,3 +302,118 @@ def resetear_password(token, nueva_password):
     except Exception as e:
         print(f"Error al resetear password: {e}")
         return False
+
+
+# ===== FUNCIONES CRUD PARA DASHBOARD DE OBRAS =====
+
+def contar_obras(filtro=None):
+    """Cuenta el total de obras activas"""
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            if filtro == 'estrenos':
+                query = "SELECT COUNT(*) as total FROM obras WHERE activo = TRUE AND es_estreno = TRUE"
+            elif filtro == 'cartelera':
+                query = "SELECT COUNT(*) as total FROM obras WHERE activo = TRUE AND es_estreno = FALSE"
+            else:
+                query = "SELECT COUNT(*) as total FROM obras WHERE activo = TRUE"
+            cursor.execute(query)
+            result = cursor.fetchone()
+        conexion.close()
+        return result['total'] if result else 0
+    except Exception as e:
+        print(f"Error al contar obras: {e}")
+        return 0
+
+
+def obtener_obras_paginadas(pagina=1, por_pagina=6, filtro=None):
+    """Obtiene obras con paginación"""
+    try:
+        offset = (pagina - 1) * por_pagina
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            if filtro == 'estrenos':
+                query = """SELECT * FROM obras WHERE activo = TRUE AND es_estreno = TRUE 
+                          ORDER BY fecha_creacion DESC LIMIT %s OFFSET %s"""
+            elif filtro == 'cartelera':
+                query = """SELECT * FROM obras WHERE activo = TRUE AND es_estreno = FALSE 
+                          ORDER BY fecha_creacion DESC LIMIT %s OFFSET %s"""
+            else:
+                query = """SELECT * FROM obras WHERE activo = TRUE 
+                          ORDER BY fecha_creacion DESC LIMIT %s OFFSET %s"""
+            cursor.execute(query, (por_pagina, offset))
+            result = cursor.fetchall()
+        conexion.close()
+        return result
+    except Exception as e:
+        print(f"Error al obtener obras paginadas: {e}")
+        return []
+
+
+def crear_obra(titulo, autor, director, descripcion, imagen, precio, fecha_estreno, teatro, duracion, es_estreno):
+    """Crea una nueva obra de teatro"""
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = """INSERT INTO obras 
+                      (titulo, autor, director, descripcion, imagen, precio, fecha_estreno, teatro, duracion, es_estreno)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            cursor.execute(query, (titulo, autor, director, descripcion, imagen, precio, 
+                                  fecha_estreno, teatro, duracion, es_estreno))
+            conexion.commit()
+            obra_id = cursor.lastrowid
+        conexion.close()
+        return obra_id
+    except Exception as e:
+        print(f"Error al crear obra: {e}")
+        return None
+
+
+def actualizar_obra(obra_id, titulo, autor, director, descripcion, imagen, precio, fecha_estreno, teatro, duracion, es_estreno):
+    """Actualiza una obra existente"""
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = """UPDATE obras 
+                      SET titulo = %s, autor = %s, director = %s, descripcion = %s, 
+                          imagen = %s, precio = %s, fecha_estreno = %s, teatro = %s, 
+                          duracion = %s, es_estreno = %s
+                      WHERE id = %s"""
+            cursor.execute(query, (titulo, autor, director, descripcion, imagen, precio,
+                                  fecha_estreno, teatro, duracion, es_estreno, obra_id))
+            conexion.commit()
+        conexion.close()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar obra: {e}")
+        return False
+
+
+def eliminar_obra(obra_id):
+    """Elimina una obra (marca como inactiva)"""
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = "UPDATE obras SET activo = FALSE WHERE id = %s"
+            cursor.execute(query, (obra_id,))
+            conexion.commit()
+        conexion.close()
+        return True
+    except Exception as e:
+        print(f"Error al eliminar obra: {e}")
+        return False
+
+
+def alternar_estreno(obra_id):
+    """Alterna el estado de estreno de una obra"""
+    try:
+        conexion = conexionMySQL()
+        with conexion.cursor() as cursor:
+            query = "UPDATE obras SET es_estreno = NOT es_estreno WHERE id = %s"
+            cursor.execute(query, (obra_id,))
+            conexion.commit()
+        conexion.close()
+        return True
+    except Exception as e:
+        print(f"Error al alternar estreno: {e}")
+        return False
