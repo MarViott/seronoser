@@ -13,7 +13,7 @@
 
 ### Paso 1: Obtener Contraseña de Aplicación de Gmail
 
-1. Abre: https://myaccount.google.com/security
+1. Abre: <https://myaccount.google.com/security>
 2. Busca **"Verificación en dos pasos"** → Actívala si no está activa
 3. Vuelve a Seguridad y busca **"Contraseñas de aplicaciones"**
 4. Haz clic en **"Contraseñas de aplicaciones"**
