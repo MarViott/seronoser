@@ -277,14 +277,17 @@ def registro():
             return redirect('/registro')
         
         # Crear usuario (orden correcto: nombre, apellido, email, password, telefono)
-        user = User.create(nombre, apellido, email, password, telefono)
+        user_id = User.create(nombre, apellido, email, password, telefono)
         
-        if user:
-            login_user(user)
-            flash(f'Registro exitoso! Bienvenido/a {nombre}!', 'success')
-            return redirect('/index')
-        else:
-            flash('Error al crear la cuenta. Intenta nuevamente', 'error')
+        if user_id:
+            # Obtener el usuario completo para hacer login
+            user = User.get_by_email(email)
+            if user:
+                login_user(user)
+                flash(f'Registro exitoso! Bienvenido/a {nombre}!', 'success')
+                return redirect('/index')
+        
+        flash('Error al crear la cuenta. Intenta nuevamente', 'error')
     
     title = "Registro"
     return render_template('registro.html', title=title)
