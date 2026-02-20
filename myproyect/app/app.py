@@ -13,11 +13,13 @@ from dotenv import load_dotenv
 from datetime import datetime
 import os
 import math
+import logging
 
 # Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 app.secret_key = os.getenv('SECRET_KEY', 'default-secret-key-change-me')
 
 # Configuración de subida de archivos
@@ -316,13 +318,13 @@ def recuperar_password():
             
             # Intentar enviar email
             try:
-                print(f"[EMAIL DEBUG] Intentando enviar email a: {email}")
-                print(f"[EMAIL DEBUG] MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
-                print(f"[EMAIL DEBUG] MAIL_PORT: {app.config.get('MAIL_PORT')}")
-                print(f"[EMAIL DEBUG] MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
-                print(f"[EMAIL DEBUG] MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
-                print(f"[EMAIL DEBUG] MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
-                print(f"[EMAIL DEBUG] MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
+                app.logger.info(f"[EMAIL DEBUG] Intentando enviar email a: {email}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_PORT: {app.config.get('MAIL_PORT')}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
+                app.logger.info(f"[EMAIL DEBUG] MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
                 
                 msg = Message(
                     subject="Recuperación de Contraseña - Ser o No Ser",
@@ -374,24 +376,24 @@ def recuperar_password():
                     </html>
                     """
                 )
-                print(f"[EMAIL DEBUG] Mensaje creado, enviando...")
+                app.logger.info(f"[EMAIL DEBUG] Mensaje creado, enviando...")
                 mail.send(msg)
-                print(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
+                app.logger.info(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
                 flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
             except Exception as e:
-                print(f"[EMAIL ERROR] ❌ Error al enviar email: {type(e).__name__}")
-                print(f"[EMAIL ERROR] Mensaje: {str(e)}")
+                app.logger.error(f"[EMAIL ERROR] ❌ Error al enviar email: {type(e).__name__}")
+                app.logger.error(f"[EMAIL ERROR] Mensaje: {str(e)}")
                 import traceback
-                print(f"[EMAIL ERROR] Traceback:\n{traceback.format_exc()}")
+                app.logger.error(f"[EMAIL ERROR] Traceback:\n{traceback.format_exc()}")
                 # Si falla el email, mostrar el link en consola como respaldo
-                print("\n" + "="*80)
-                print("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA (Error al enviar email)")
-                print("="*80)
-                print(f"\nEmail: {email}")
-                print(f"Link: {reset_url}")
-                print(f"\nEste link expira en 1 hora")
-                print(f"\nError: {e}")
-                print("="*80 + "\n")
+                app.logger.error("\n" + "="*80)
+                app.logger.error("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA (Error al enviar email)")
+                app.logger.error("="*80)
+                app.logger.error(f"\nEmail: {email}")
+                app.logger.error(f"Link: {reset_url}")
+                app.logger.error(f"\nEste link expira en 1 hora")
+                app.logger.error(f"\nError: {e}")
+                app.logger.error("="*80 + "\n")
                 flash('Hubo un problema al enviar el email. Verifica la configuración SMTP en .env', 'warning')
         else:
             # No revelar si el email existe o no por seguridad
