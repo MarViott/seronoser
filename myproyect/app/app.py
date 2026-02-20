@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from functools import wraps
 from datauser import *  # Importamos la base de datos Json
@@ -26,6 +27,16 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Crear carpeta de uploads si no existe
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Configuración de Flask-Mail (SMTP)
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+mail = Mail(app)
 
 # Configuración de Flask-Login
 login_manager = LoginManager()
@@ -300,21 +311,77 @@ def recuperar_password():
         token = crear_token_recuperacion(email)
         
         if token:
-            # En producción, aquí enviarías un email
-            # Por ahora, mostramos el link en consola
             reset_url = f"{request.url_root}resetear-password/{token}"
-            print("\n" + "="*80)
-            print("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA")
-            print("="*80)
-            print(f"\nEmail: {email}")
-            print(f"Link: {reset_url}")
-            print(f"\nEste link expira en 1 hora")
-            print("="*80 + "\n")
             
-            flash('Si el email está registrado, recibirás un link de recuperación. Revisa la consola del servidor.', 'success')
+            # Intentar enviar email
+            try:
+                msg = Message(
+                    subject="Recuperación de Contraseña - Ser o No Ser",
+                    recipients=[email],
+                    html=f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                      color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                            .button {{ display: inline-block; padding: 15px 30px; background: #667eea; 
+                                     color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                            .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #666; }}
+                            .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>🎭 Ser o No Ser</h1>
+                                <h2>Recuperación de Contraseña</h2>
+                            </div>
+                            <div class="content">
+                                <p>Hola,</p>
+                                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+                                <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+                                <center>
+                                    <a href="{reset_url}" class="button">Restablecer Contraseña</a>
+                                </center>
+                                <p>O copia y pega este enlace en tu navegador:</p>
+                                <p style="background: #e9ecef; padding: 10px; border-radius: 5px; word-break: break-all;">
+                                    {reset_url}
+                                </p>
+                                <div class="warning">
+                                    <strong>⚠️ Importante:</strong> Este enlace expira en <strong>1 hora</strong>.
+                                </div>
+                                <p>Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
+                            </div>
+                            <div class="footer">
+                                <p>© 2026 Ser o No Ser - Teatro en Vivo</p>
+                                <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                )
+                mail.send(msg)
+                flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
+            except Exception as e:
+                print(f"Error al enviar email: {e}")
+                # Si falla el email, mostrar el link en consola como respaldo
+                print("\n" + "="*80)
+                print("🔑 LINK DE RECUPERACIÓN DE CONTRASEÑA (Error al enviar email)")
+                print("="*80)
+                print(f"\nEmail: {email}")
+                print(f"Link: {reset_url}")
+                print(f"\nEste link expira en 1 hora")
+                print(f"\nError: {e}")
+                print("="*80 + "\n")
+                flash('Hubo un problema al enviar el email. Verifica la configuración SMTP en .env', 'warning')
         else:
             # No revelar si el email existe o no por seguridad
-            flash('Si el email está registrado, recibirás un link de recuperación. Revisa la consola del servidor.', 'success')
+            flash('Si el email está registrado, recibirás instrucciones para recuperar tu contraseña.', 'success')
         
         return redirect('/login')
     
