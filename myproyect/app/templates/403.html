@@ -1,0 +1,140 @@
+{% include 'defaults/head.html' %} {% include 'defaults/header.html' %}
+
+<section class="error-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <div class="error-content">
+          <div class="error-icon mb-4">
+            <i class="fas fa-ban"></i>
+          </div>
+          <h1 class="error-code">403</h1>
+          <h2 class="error-title">Acceso Denegado</h2>
+          <p class="error-message">
+            No tienes los permisos necesarios para acceder a esta página.
+          </p>
+          <p class="text-muted mb-4">
+            Esta sección está restringida solo para administradores y editores.
+          </p>
+          <div class="error-actions">
+            <a href="/index" class="btn btn-primary btn-lg me-2">
+              <i class="fas fa-home me-2"></i>Volver al Inicio
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="/mis-compras" class="btn btn-outline-primary btn-lg">
+              <i class="fas fa-ticket-alt me-2"></i>Mis Compras
+            </a>
+            {% else %}
+            <a href="/login" class="btn btn-outline-primary btn-lg">
+              <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .error-section {
+    min-height: calc(100vh - 200px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+  }
+
+  .error-content {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .error-icon {
+    font-size: 6rem;
+    color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-10px);
+    }
+    75% {
+      transform: translateX(10px);
+    }
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--primary-color);
+    margin: 0;
+    line-height: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .error-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin: 1rem 0;
+  }
+
+  .error-message {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+
+  .error-actions {
+    margin-top: 2rem;
+  }
+
+  .error-actions .btn {
+    transition: all 0.3s ease;
+  }
+
+  .error-actions .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    .error-code {
+      font-size: 5rem;
+    }
+
+    .error-title {
+      font-size: 2rem;
+    }
+
+    .error-message {
+      font-size: 1rem;
+    }
+
+    .error-icon {
+      font-size: 4rem;
+    }
+
+    .error-actions .btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .error-actions .btn.me-2 {
+      margin-right: 0 !important;
+    }
+  }
+</style>
+
+{% include 'defaults/footer.html' %}

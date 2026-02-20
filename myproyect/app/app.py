@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash, url_for, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from functools import wraps
 from datauser import *  # Importamos la base de datos Json
 from controller_db import *  # Importamos la base de datos MySQL
 from models import (User, obtener_obras, obtener_obra_por_id, crear_orden, obtener_ordenes_usuario,
@@ -37,10 +38,35 @@ login_manager.login_message_category = 'info'
 def load_user(user_id):
     return User.get_by_id(int(user_id))
 
+# Decorador para verificar roles
+def rol_requerido(*roles):
+    """
+    Decorador para restringir acceso basado en roles de usuario.
+    Uso: @rol_requerido('administrador', 'editor')
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                flash('Debes iniciar sesión para acceder a esta página', 'warning')
+                return redirect(url_for('login'))
+            
+            if not current_user.tiene_rol(*roles):
+                flash('No tienes permisos para acceder a esta página', 'danger')
+                abort(403)
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 # Manejadores de errores
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
 
 @app.errorhandler(500)
 def internal_server_error(e):
@@ -409,6 +435,7 @@ def archivo_permitido(filename):
 
 @app.route('/dashboard')
 @login_required
+@rol_requerido('administrador', 'editor')
 def dashboard():
     """Dashboard principal para gestión de obras"""
     title = "Dashboard - Gestión de Obras"
@@ -433,6 +460,7 @@ def dashboard():
 
 @app.route('/dashboard/nueva-obra', methods=['GET', 'POST'])
 @login_required
+@rol_requerido('administrador', 'editor')
 def nueva_obra():
     """Crear nueva obra"""
     title = "Nueva Obra"
@@ -477,6 +505,7 @@ def nueva_obra():
 
 @app.route('/dashboard/editar/<int:obra_id>', methods=['GET', 'POST'])
 @login_required
+@rol_requerido('administrador', 'editor')
 def editar_obra(obra_id):
     """Editar obra existente"""
     obra = obtener_obra_por_id(obra_id)
@@ -534,6 +563,7 @@ def editar_obra(obra_id):
 
 @app.route('/dashboard/eliminar/<int:obra_id>')
 @login_required
+@rol_requerido('administrador', 'editor')
 def eliminar_obra_route(obra_id):
     """Eliminar obra (soft delete)"""
     try:
@@ -552,6 +582,7 @@ def eliminar_obra_route(obra_id):
 
 @app.route('/dashboard/alternar-estreno/<int:obra_id>')
 @login_required
+@rol_requerido('administrador', 'editor')
 def alternar_estreno_route(obra_id):
     """Alternar estado de estreno de una obra"""
     try:

@@ -9,12 +9,13 @@ from datetime import datetime, timedelta
 class User(UserMixin):
     """Modelo de usuario para Flask-Login"""
     
-    def __init__(self, id, nombre, apellido, email, activo=True):
+    def __init__(self, id, nombre, apellido, email, activo=True, rol='usuario'):
         self.id = id
         self.nombre = nombre
         self.apellido = apellido
         self.email = email
         self.activo = activo
+        self.rol = rol
     
     @property
     def is_active(self):
@@ -29,7 +30,7 @@ class User(UserMixin):
         try:
             conexion = conexionMySQL()
             with conexion.cursor() as cursor:
-                query = "SELECT id, nombre, apellido, email, activo FROM usuarios_auth WHERE id = %s AND activo = TRUE"
+                query = "SELECT id, nombre, apellido, email, activo, rol FROM usuarios_auth WHERE id = %s AND activo = TRUE"
                 cursor.execute(query, (user_id,))
                 result = cursor.fetchone()
             conexion.close()
@@ -40,7 +41,8 @@ class User(UserMixin):
                     nombre=result['nombre'],
                     apellido=result['apellido'],
                     email=result['email'],
-                    activo=result['activo']
+                    activo=result['activo'],
+                    rol=result.get('rol', 'usuario')
                 )
             return None
         except Exception as e:
@@ -53,7 +55,7 @@ class User(UserMixin):
         try:
             conexion = conexionMySQL()
             with conexion.cursor() as cursor:
-                query = "SELECT id, nombre, apellido, email, password_hash, activo FROM usuarios_auth WHERE email = %s"
+                query = "SELECT id, nombre, apellido, email, password_hash, activo, rol FROM usuarios_auth WHERE email = %s"
                 cursor.execute(query, (email,))
                 result = cursor.fetchone()
             conexion.close()
@@ -65,7 +67,8 @@ class User(UserMixin):
                     nombre=result['nombre'],
                     apellido=result['apellido'],
                     email=result['email'],
-                    activo=result['activo']
+                    activo=result['activo'],
+                    rol=result.get('rol', 'usuario')
                 )
                 # Guardar el hash para verificación de contraseña
                 user.password_hash = result['password_hash']
@@ -76,16 +79,16 @@ class User(UserMixin):
             return None
     
     @staticmethod
-    def create(nombre, apellido, email, password, telefono=None):
+    def create(nombre, apellido, email, password, telefono=None, rol='usuario'):
         """Crear un nuevo usuario"""
         try:
             password_hash = generate_password_hash(password)
             conexion = conexionMySQL()
             with conexion.cursor() as cursor:
                 query = """INSERT INTO usuarios_auth 
-                          (nombre, apellido, email, password_hash, telefono) 
-                          VALUES (%s, %s, %s, %s, %s)"""
-                cursor.execute(query, (nombre, apellido, email, password_hash, telefono))
+                          (nombre, apellido, email, password_hash, telefono, rol) 
+                          VALUES (%s, %s, %s, %s, %s, %s)"""
+                cursor.execute(query, (nombre, apellido, email, password_hash, telefono, rol))
                 conexion.commit()
                 user_id = cursor.lastrowid
             conexion.close()
@@ -102,6 +105,22 @@ class User(UserMixin):
         if hasattr(self, 'password_hash'):
             return check_password_hash(self.password_hash, password)
         return False
+    
+    def tiene_rol(self, *roles):
+        """Verificar si el usuario tiene alguno de los roles especificados"""
+        return self.rol in roles
+    
+    def es_admin(self):
+        """Verificar si el usuario es administrador"""
+        return self.rol == 'administrador'
+    
+    def es_editor(self):
+        """Verificar si el usuario es editor"""
+        return self.rol == 'editor'
+    
+    def puede_editar(self):
+        """Verificar si el usuario puede editar (admin o editor)"""
+        return self.rol in ('administrador', 'editor')
     
     @staticmethod
     def authenticate(email, password):

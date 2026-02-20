@@ -46,12 +46,14 @@
                 <span class="d-none d-lg-inline ms-1">Mis Compras</span>
               </a>
             </div>
+            {% if current_user.puede_editar() %}
             <div class="dropdown">
               <a href="/dashboard" class="action-btn" title="Dashboard Admin">
                 <i class="fas fa-cog"></i>
                 <span class="d-none d-lg-inline ms-1">Dashboard</span>
               </a>
             </div>
+            {% endif %}
             <div class="dropdown">
               <a
                 href="/logout"
