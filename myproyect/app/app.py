@@ -14,6 +14,8 @@ from datetime import datetime
 import os
 import math
 import logging
+import smtplib
+import threading
 
 # Cargar variables de entorno
 load_dotenv()
@@ -38,6 +40,8 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+app.config['MAIL_MAX_EMAILS'] = None
+app.config['MAIL_ASCII_ATTACHMENTS'] = False
 
 mail = Mail(app)
 
@@ -328,6 +332,29 @@ def recuperar_password():
                 app.logger.info(f"[EMAIL DEBUG] MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
                 app.logger.info(f"[EMAIL DEBUG] MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
                 app.logger.info(f"[EMAIL DEBUG] MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
+                app.logger.info(f"[EMAIL DEBUG] Verificando password length: {len(app.config.get('MAIL_PASSWORD', ''))} caracteres")
+                
+                # Probar conexión SMTP primero
+                app.logger.info(f"[EMAIL DEBUG] Probando conexión SMTP...")
+                try:
+                    smtp_server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=15)
+                    smtp_server.set_debuglevel(0)
+                    smtp_server.ehlo()
+                    if app.config['MAIL_USE_TLS']:
+                        app.logger.info(f"[EMAIL DEBUG] Iniciando STARTTLS...")
+                        smtp_server.starttls()
+                        smtp_server.ehlo()
+                    app.logger.info(f"[EMAIL DEBUG] Intentando login con usuario: {app.config['MAIL_USERNAME']}")
+                    smtp_server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    smtp_server.quit()
+                    app.logger.info(f"[EMAIL DEBUG] ✅ Conexión SMTP exitosa")
+                except smtplib.SMTPAuthenticationError as auth_err:
+                    app.logger.error(f"[EMAIL ERROR] ❌ Error de autenticación SMTP: {auth_err}")
+                    app.logger.error(f"[EMAIL ERROR] Código: {auth_err.smtp_code}, Mensaje: {auth_err.smtp_error}")
+                    raise
+                except Exception as conn_err:
+                    app.logger.error(f"[EMAIL ERROR] ❌ Error de conexión SMTP: {type(conn_err).__name__}: {conn_err}")
+                    raise
                 
                 msg = Message(
                     subject="Recuperación de Contraseña - Ser o No Ser",
@@ -380,9 +407,42 @@ def recuperar_password():
                     """
                 )
                 app.logger.info(f"[EMAIL DEBUG] Mensaje creado, enviando...")
-                mail.send(msg)
-                app.logger.info(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
-                flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
+                
+                # Enviar con timeout usando threading
+                email_sent = {'success': False, 'error': None}
+                
+                def send_email_with_timeout():
+                    try:
+                        mail.send(msg)
+                        email_sent['success'] = True
+                    except Exception as e:
+                        email_sent['error'] = e
+                
+                send_thread = threading.Thread(target=send_email_with_timeout)
+                send_thread.daemon = True
+                send_thread.start()
+                send_thread.join(timeout=30)  # Esperar máximo 30 segundos
+                
+                if send_thread.is_alive():
+                    app.logger.error(f"[EMAIL ERROR] ⏱️ Timeout al enviar email después de 30 segundos")
+                    raise TimeoutError("El envío del email excedió el tiempo límite de 30 segundos")
+                
+                if email_sent['error']:
+                    raise email_sent['error']
+                    
+                if email_sent['success']:
+                    app.logger.info(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
+                    flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
+                else:
+                    app.logger.error(f"[EMAIL ERROR] ❌ Error desconocido al enviar email")
+                    raise Exception("Error desconocido al enviar email")
+                    
+            except TimeoutError as te:
+                app.logger.error(f"[EMAIL ERROR] ⏱️ Timeout: {te}")
+                flash('El envío del email está tomando demasiado tiempo. Verifica la configuración SMTP.', 'warning')
+            except smtplib.SMTPAuthenticationError as auth_err:
+                app.logger.error(f"[EMAIL ERROR] 🔐 Error de autenticación: {auth_err}")
+                flash('Error de autenticación con el servidor de correo. Verifica MAIL_USERNAME y MAIL_PASSWORD.', 'error')
             except Exception as e:
                 app.logger.error(f"[EMAIL ERROR] ❌ Error al enviar email: {type(e).__name__}")
                 app.logger.error(f"[EMAIL ERROR] Mensaje: {str(e)}")
