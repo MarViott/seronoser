@@ -16,6 +16,8 @@ import math
 import logging
 import smtplib
 import threading
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail as SGMail
 
 # Cargar variables de entorno
 load_dotenv()
@@ -323,126 +325,75 @@ def recuperar_password():
         if token:
             reset_url = f"{request.url_root}resetear-password/{token}"
             
-            # Intentar enviar email
+            # Intentar enviar email via SendGrid (HTTP API - funciona en Render free tier)
             try:
-                app.logger.info(f"[EMAIL DEBUG] Intentando enviar email a: {email}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_PORT: {app.config.get('MAIL_PORT')}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
-                app.logger.info(f"[EMAIL DEBUG] MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
-                app.logger.info(f"[EMAIL DEBUG] Verificando password length: {len(app.config.get('MAIL_PASSWORD', ''))} caracteres")
+                SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+                MAIL_FROM = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('MAIL_USERNAME'))
                 
-                # Probar conexión SMTP primero
-                app.logger.info(f"[EMAIL DEBUG] Probando conexión SMTP...")
-                try:
-                    smtp_server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=15)
-                    smtp_server.set_debuglevel(0)
-                    smtp_server.ehlo()
-                    if app.config['MAIL_USE_TLS']:
-                        app.logger.info(f"[EMAIL DEBUG] Iniciando STARTTLS...")
-                        smtp_server.starttls()
-                        smtp_server.ehlo()
-                    app.logger.info(f"[EMAIL DEBUG] Intentando login con usuario: {app.config['MAIL_USERNAME']}")
-                    smtp_server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                    smtp_server.quit()
-                    app.logger.info(f"[EMAIL DEBUG] ✅ Conexión SMTP exitosa")
-                except smtplib.SMTPAuthenticationError as auth_err:
-                    app.logger.error(f"[EMAIL ERROR] ❌ Error de autenticación SMTP: {auth_err}")
-                    app.logger.error(f"[EMAIL ERROR] Código: {auth_err.smtp_code}, Mensaje: {auth_err.smtp_error}")
-                    raise
-                except Exception as conn_err:
-                    app.logger.error(f"[EMAIL ERROR] ❌ Error de conexión SMTP: {type(conn_err).__name__}: {conn_err}")
-                    raise
+                if not SENDGRID_API_KEY:
+                    raise ValueError("SENDGRID_API_KEY no configurada en variables de entorno")
                 
-                msg = Message(
-                    subject="Recuperación de Contraseña - Ser o No Ser",
-                    recipients=[email],
-                    html=f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <style>
-                            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                      color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-                            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                            .button {{ display: inline-block; padding: 15px 30px; background: #667eea; 
-                                     color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-                            .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #666; }}
-                            .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="header">
-                                <h1>🎭 Ser o No Ser</h1>
-                                <h2>Recuperación de Contraseña</h2>
-                            </div>
-                            <div class="content">
-                                <p>Hola,</p>
-                                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
-                                <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
-                                <center>
-                                    <a href="{reset_url}" class="button">Restablecer Contraseña</a>
-                                </center>
-                                <p>O copia y pega este enlace en tu navegador:</p>
-                                <p style="background: #e9ecef; padding: 10px; border-radius: 5px; word-break: break-all;">
-                                    {reset_url}
-                                </p>
-                                <div class="warning">
-                                    <strong>⚠️ Importante:</strong> Este enlace expira en <strong>1 hora</strong>.
-                                </div>
-                                <p>Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
-                            </div>
-                            <div class="footer">
-                                <p>© 2026 Ser o No Ser - Teatro en Vivo</p>
-                                <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-                            </div>
+                app.logger.info(f"[EMAIL] Enviando via SendGrid a: {email}")
+                
+                html_content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                  color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                        .button {{ display: inline-block; padding: 15px 30px; background: #667eea;
+                                 color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                        .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #666; }}
+                        .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Ser o No Ser</h1>
+                            <h2>Recuperacion de Contrasena</h2>
                         </div>
-                    </body>
-                    </html>
-                    """
+                        <div class="content">
+                            <p>Hola,</p>
+                            <p>Recibimos una solicitud para restablecer la contrasena de tu cuenta.</p>
+                            <p>Haz clic en el siguiente boton para crear una nueva contrasena:</p>
+                            <center>
+                                <a href="{reset_url}" class="button">Restablecer Contrasena</a>
+                            </center>
+                            <p>O copia y pega este enlace en tu navegador:</p>
+                            <p style="background: #e9ecef; padding: 10px; border-radius: 5px; word-break: break-all;">
+                                {reset_url}
+                            </p>
+                            <div class="warning">
+                                <strong>Importante:</strong> Este enlace expira en <strong>1 hora</strong>.
+                            </div>
+                            <p>Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
+                        </div>
+                        <div class="footer">
+                            <p>&copy; 2026 Ser o No Ser - Teatro en Vivo</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                sg_message = SGMail(
+                    from_email=MAIL_FROM,
+                    to_emails=email,
+                    subject='Recuperacion de Contrasena - Ser o No Ser',
+                    html_content=html_content
                 )
-                app.logger.info(f"[EMAIL DEBUG] Mensaje creado, enviando...")
                 
-                # Enviar con timeout usando threading
-                email_sent = {'success': False, 'error': None}
+                sg = SendGridAPIClient(SENDGRID_API_KEY)
+                response = sg.send(sg_message)
                 
-                def send_email_with_timeout():
-                    try:
-                        mail.send(msg)
-                        email_sent['success'] = True
-                    except Exception as e:
-                        email_sent['error'] = e
-                
-                send_thread = threading.Thread(target=send_email_with_timeout)
-                send_thread.daemon = True
-                send_thread.start()
-                send_thread.join(timeout=30)  # Esperar máximo 30 segundos
-                
-                if send_thread.is_alive():
-                    app.logger.error(f"[EMAIL ERROR] ⏱️ Timeout al enviar email después de 30 segundos")
-                    raise TimeoutError("El envío del email excedió el tiempo límite de 30 segundos")
-                
-                if email_sent['error']:
-                    raise email_sent['error']
+                app.logger.info(f"[EMAIL] ✅ Email enviado. Status: {response.status_code}")
+                flash('Te hemos enviado un email con instrucciones para recuperar tu contrasena.', 'success')
                     
-                if email_sent['success']:
-                    app.logger.info(f"[EMAIL DEBUG] ✅ Email enviado exitosamente a {email}")
-                    flash('Te hemos enviado un email con instrucciones para recuperar tu contraseña.', 'success')
-                else:
-                    app.logger.error(f"[EMAIL ERROR] ❌ Error desconocido al enviar email")
-                    raise Exception("Error desconocido al enviar email")
-                    
-            except TimeoutError as te:
-                app.logger.error(f"[EMAIL ERROR] ⏱️ Timeout: {te}")
-                flash('El envío del email está tomando demasiado tiempo. Verifica la configuración SMTP.', 'warning')
-            except smtplib.SMTPAuthenticationError as auth_err:
-                app.logger.error(f"[EMAIL ERROR] 🔐 Error de autenticación: {auth_err}")
-                flash('Error de autenticación con el servidor de correo. Verifica MAIL_USERNAME y MAIL_PASSWORD.', 'error')
             except Exception as e:
                 app.logger.error(f"[EMAIL ERROR] ❌ Error al enviar email: {type(e).__name__}")
                 app.logger.error(f"[EMAIL ERROR] Mensaje: {str(e)}")
